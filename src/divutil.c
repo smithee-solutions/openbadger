@@ -29,11 +29,9 @@
 #include <openbadger-version.h>
 extern unsigned char secret_key_default [];
 extern unsigned char expected_K0 [];
-#define EQUALS ==
-#define OB_STRING_MAX (1024)
-#define OB_KEY_SIZE_10957 (128/8)
-#define OB_UID_SIZE (56/8)
-#define LOG stdout
+extern unsigned char xor_K1 [];
+void array_shift_left(unsigned char *from, unsigned char *to);
+void array_xor(unsigned char *xor_left, unsigned char *xor_right);
 
 
 int
@@ -57,33 +55,6 @@ int
 } /* aes_encrypt */
 
 
-char
-  *string_hex_buffer
-    (OB_CONTEXT *ctx,
-    unsigned char *buf,
-    int buf_lth)
-
-{ /* string_hex_to_buffer */
-
-  int i;
-  static char returned_string [OB_STRING_MAX];
-  char tmps [3];
-
-
-  returned_string [0] = 0;
-  for (i=0; i<buf_lth; i++)
-  {
-    sprintf(tmps, "%02X", *(buf+i));
-    strcat(returned_string, tmps);
-    if (ctx->verbosity > 3)
-      if (strlen(returned_string) > (OB_STRING_MAX-8))
-        fprintf(stderr, "string too long\n");
-  };
-  return(returned_string);
-
-} /* string_hex_to_buffer */
-
-
 int
   main
     (int argc,
@@ -98,6 +69,7 @@ int
   int encrypted_length;
   int found_something;
   unsigned char K0 [OB_KEY_SIZE_10957];
+  unsigned char K1 [OB_KEY_SIZE_10957];
   unsigned char K0_plaintext [OB_KEY_SIZE_10957];
   int longindex;
   char optstring [OB_STRING_MAX];
@@ -202,11 +174,24 @@ fprintf(stderr, "DEBUG: json load /opt/tester/etc/openbadger-settings.json or lo
     };
     fprintf(LOG, "        K0: %s\n", string_hex_buffer(ctx, K0, OB_KEY_SIZE_10957));
   };
+  if (status EQUALS ST_OK)
+  {
+    fprintf(LOG, "---> Step 1 Generate K1 <---\n");
 
-// generate K0 - aes-128 bytes of 0 then aes encrypt (secret_key, buffer);
-// expected value 0x067...
-// generate K1: of msb k0 0 then k1=k0 <<1
-// else K1 is (K0 <<1) xor 0x00...87
+    array_shift_left(K0, K1);
+    if (0x80 & K0 [0])
+    {
+      fprintf(LOG, "K0 MSB was 1\n");
+      array_xor(K1, xor_K1);
+    }
+    else
+    {
+      fprintf(LOG, "K0 MSB was 0\n");
+    };
+    array_xor(K1, xor_K1);    
+
+    fprintf(LOG, "        K1: %s\n", string_hex_buffer(ctx, K1, OB_KEY_SIZE_10957));
+  };
 // generate K2: if msb K1 - then K2=K1<<1
 // else K2 = (K1 <<1) xori 0x00...87
 // div_input (31 bytes)  is div constant 0x01 plus UID plus 0x80 padding (aes-128 bits?)
@@ -503,24 +488,10 @@ int
   int status;
 
 
-  fprintf(stderr, "create-OES-contents (part of %s)\n", CSHH_VERSION_STRING);
-  strcpy (parameter_filename, "openbadger.json");
-  if (argc > 1)
-    strcpy (parameter_filename, argv [1]);
   status = init_parameters (&acdo, &OES_keys, parameter_filename);
 
   if (status EQUALS 0)
   {
-    if (acdo.oes_format EQUALS 1)
-    {
-      fprintf(stderr, "OES Format\n");
-    }
-    else
-    {
-      fprintf(stderr, "Classic AN10957 Format\n");
-    };
-    fprintf(stderr, "  Data Format %d\n", acdo.data_format);
-
     // initialize CIO
     memset (&cio, 0, sizeof (cio));
     strcpy ((char *)cio.manufacturer, OES_keys.manufacturer);

@@ -26,21 +26,14 @@
 
 
 #include <openbadger.h>
+#include <openbadger-version.h>
+extern unsigned char secret_key_default [];
+extern unsigned char expected_K0 [];
 #define EQUALS ==
 #define OB_STRING_MAX (1024)
 #define OB_KEY_SIZE_10957 (128/8)
 #define OB_UID_SIZE (56/8)
-typedef struct
-{
-  int verbosity;
-  int uid_size;
-  unsigned char secret_key [OB_KEY_SIZE_10957];
-  int action;
-} OB_CONTEXT;
 #define LOG stdout
-
-unsigned char expected_k0 [OB_KEY_SIZE_10957] =
-  {0x67, 0x04, 0xA3, 0xAF};
 
 
 int
@@ -50,38 +43,42 @@ int
     unsigned char *ciphertext,
     unsigned char *key,
     int *length)
-{return(-1);}
 
-int
-  aes_initialize
-    (OB_CONTEXT *ctx)
-{return(-1);}
+{ /* aes_encrypt */
+
+  struct AES_ctx crypto_context;
 
 
-int
-  init_parameters
-    (OB_CONTEXT *ctx)
+  memcpy(ciphertext, plaintext, *length);
+  AES_init_ctx_iv(&crypto_context, ctx->secret_key, ctx->iv);
+  AES_CBC_encrypt_buffer(&crypto_context, ciphertext, *length);
+  return(ST_OK);
 
-//    (OES_PACS_DATA_OBJECT *acdo, OES_KEY_MATERIAL *k, char *parameter_file)
-
-{ /* init_parameters */
-
-  ctx->uid_size = OB_UID_SIZE;
-  return(-1);
-
-} /* init_parameters */
+} /* aes_encrypt */
 
 
 char
   *string_hex_buffer
-    (unsigned char *buf,
+    (OB_CONTEXT *ctx,
+    unsigned char *buf,
     int buf_lth)
 
 { /* string_hex_to_buffer */
 
+  int i;
   static char returned_string [OB_STRING_MAX];
+  char tmps [3];
 
-  strcpy(returned_string, "t.b.d.");
+
+  returned_string [0] = 0;
+  for (i=0; i<buf_lth; i++)
+  {
+    sprintf(tmps, "%02X", *(buf+i));
+    strcat(returned_string, tmps);
+    if (ctx->verbosity > 3)
+      if (strlen(returned_string) > (OB_STRING_MAX-8))
+        fprintf(stderr, "string too long\n");
+  };
   return(returned_string);
 
 } /* string_hex_to_buffer */
@@ -100,11 +97,11 @@ int
   int done;
   int encrypted_length;
   int found_something;
-  unsigned char k0 [OB_KEY_SIZE_10957];
-  unsigned char k0_plaintext [OB_KEY_SIZE_10957];
+  unsigned char K0 [OB_KEY_SIZE_10957];
+  unsigned char K0_plaintext [OB_KEY_SIZE_10957];
   int longindex;
   char optstring [OB_STRING_MAX];
-  unsigned char uid [OB_UID_SIZE];
+  int selftest;
   int status;
   int status_opt;
   struct option
@@ -122,7 +119,9 @@ int
   memset(ctx, 0, sizeof(*ctx));
   status = ST_OK;
   found_something = 0;
-  memset(uid, 0, sizeof(uid));
+  ctx->uid_size = OB_UID_SIZE;
+  ctx->verbosity = 9;
+  fprintf(LOG, "divutil %s\n", OPENBADGER_VERSION);
 
   done = 0;
   while (!done)
@@ -144,9 +143,10 @@ fprintf(stderr, "DEBUG: json load as details\n");
       // stay silent if looping around after an option was found.
       break;
     case OB_SELFTEST:
-// copy defaults into parameters
       fprintf(LOG, "Self-test selected, loading parameters.\n");
+      memcpy(ctx->secret_key, &secret_key_default, OB_KEY_SIZE_10957);
       status = ST_OK;
+      selftest = 1;
       found_something = 1;
       break;
     case OB_SETTINGS:
@@ -175,29 +175,32 @@ fprintf(stderr, "DEBUG: json load /opt/tester/etc/openbadger-settings.json or lo
   };
   if (status EQUALS ST_OK)
   {
-  fprintf(LOG, "Secret Key: %s\n", string_hex_buffer(ctx->secret_key, OB_KEY_SIZE_10957));
-  fprintf(LOG, "       UID: %s\n", string_hex_buffer(uid, ctx->uid_size));
+    fprintf(LOG, "Secret Key: %s\n", string_hex_buffer(ctx, ctx->secret_key, OB_KEY_SIZE_10957));
+    fprintf(LOG, "       UID: %s\n", string_hex_buffer(ctx, ctx->uid, ctx->uid_size));
 
-  status = aes_initialize(ctx);
-  if (status EQUALS ST_OK)
-  {
     fprintf(LOG, "---> Step 1 Generate K0 <---\n");
-    memset(k0_plaintext, 0, sizeof(k0_plaintext));
-    encrypted_length = sizeof(k0_plaintext);
-    status = aes_encrypt(ctx, k0_plaintext, k0, ctx->secret_key, &encrypted_length);
+    memset(K0_plaintext, 0, sizeof(K0_plaintext));
+    encrypted_length = sizeof(K0_plaintext);
+    status = aes_encrypt(ctx, K0_plaintext, K0, ctx->secret_key, &encrypted_length);
     if (status != ST_OK)
       fprintf(LOG, "encrypt K0 failed.\n");
   };
   if (status EQUALS ST_OK)
   {
-    if (ctx->action EQUALS OB_SELFTEST)
+    if (selftest)
     {
-      comparison = memcmp(expected_k0, k0, sizeof(k0));
-      if (!comparison)
-        fprintf(LOG, "K0 mismatch:\n   Calc %s\nExpected %s\n",
-          string_hex_buffer(k0, sizeof(k0)),
-          string_hex_buffer(expected_k0, sizeof(k0)));
+      comparison = memcmp(expected_K0, K0, OB_KEY_SIZE_10957);
+      if (ctx->verbosity > 3)
+        fprintf(stderr, "K0 compare %d.\n", comparison);
+      if (comparison != 0)
+        fprintf(LOG, "K0 mismatch:\n    Calc %s\nExpected %s\n",
+          string_hex_buffer(ctx, K0, sizeof(K0)),
+          string_hex_buffer(ctx, expected_K0, sizeof(K0)));
+      else
+        fprintf(LOG, "K0 selftest passed.\n");
+
     };
+    fprintf(LOG, "        K0: %s\n", string_hex_buffer(ctx, K0, OB_KEY_SIZE_10957));
   };
 
 // generate K0 - aes-128 bytes of 0 then aes encrypt (secret_key, buffer);
@@ -210,7 +213,6 @@ fprintf(stderr, "DEBUG: json load /opt/tester/etc/openbadger-settings.json or lo
 // xor K2 with div input
 // encrypt with secret key
 // take last 16 byte block of enc result
-  };
 
   if (status != 0)
     fprintf(LOG, "divutil exit status %d.\n", status);
@@ -353,7 +355,6 @@ void
 { /* generate_signature */
 
   uint8_t buffer [2*OES_KEY_SIZE_OCTETS];
-  struct AES_ctx crypto_context;
   unsigned char DIV_input [2*OES_KEY_SIZE_OCTETS];
   int i;
   unsigned char IV[OES_KEY_SIZE_OCTETS];
@@ -470,8 +471,6 @@ void
     fprintf(stderr, "\n");
   };
 
-  AES_init_ctx_iv(&crypto_context, k->diversified_key, IV);
-  AES_CBC_encrypt_buffer(&crypto_context, signature_data, sizeof(signature_data));
   if (k->verbosity > 3)
   {
     fprintf(stderr, "  Sig: ");
@@ -586,11 +585,6 @@ fprintf(stderr, "\n...ACDO...\n");
       fprintf (stderr, "\n");
     };
   };
-  if (status != 0)
-    fprintf(stderr, "Status returned was %d\n", status);
-  return (status);
-
-} /* main for create-OES-contents */
 
 #endif
 

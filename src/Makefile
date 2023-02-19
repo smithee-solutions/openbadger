@@ -54,9 +54,12 @@ read_mifare:	read_mifare.o Makefile
 read_mifare.o:	read_mifare.c
 	${CC} ${CFLAGS} read_mifare.c
 
-divutil:	divutil.o Makefile
-	${LINK} -o divutil divutil.o ${LDFLAGS}
+divutil:	divutil.o oo-keys.o Makefile
+	${LINK} -o divutil divutil.o oo-keys.o ${LDFLAGS}
 
-divutil.o:	divutil.c sketch.c
+divutil.o:	divutil.c ../include/openbadger.h ../include/openbadger-version.h
 	${CC} ${CFLAGS} divutil.c
+
+ob-keys.o:	ob-keys.c ../include/openbadger.h
+	${CC} ${CFLAGS} ob-keys.c
 

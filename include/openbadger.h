@@ -29,7 +29,6 @@
 
 #define OB_KEY_SIZE_10957 (128/8)
 #define OB_STRING_MAX (1024)
-#define OB_KEY_SIZE_10957 (128/8)
 #define OB_UID_SIZE (56/8)
 
 typedef struct
@@ -45,4 +44,6 @@ typedef struct
 #define ST_OK                (0)
 #define STOB_NO_ARGUMENTS    (1)
 #define STOB_NOT_IMPLEMENTED (2)
+
+char *string_hex_buffer(OB_CONTEXT *ctx, unsigned char *buf, int buf_lth);
 

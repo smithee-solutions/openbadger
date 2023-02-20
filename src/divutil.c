@@ -30,8 +30,6 @@
 extern unsigned char secret_key_default [];
 extern unsigned char expected_K0 [];
 extern unsigned char xor_K1 [];
-void array_shift_left(unsigned char *from, unsigned char *to);
-void array_xor(unsigned char *xor_left, unsigned char *xor_right);
 
 
 int
@@ -68,9 +66,11 @@ int
   int done;
   int encrypted_length;
   int found_something;
+  int i;
   unsigned char K0 [OB_KEY_SIZE_10957];
-  unsigned char K1 [OB_KEY_SIZE_10957];
   unsigned char K0_plaintext [OB_KEY_SIZE_10957];
+  unsigned char K1 [OB_KEY_SIZE_10957];
+  unsigned char K1_new [OB_KEY_SIZE_10957];
   int longindex;
   char optstring [OB_STRING_MAX];
   int selftest;
@@ -82,7 +82,7 @@ int
       {"help", 0, &(divutil_context.action), OB_HELP},
       {"selftest", 0, &(divutil_context.action), OB_SELFTEST},
       {"settings", required_argument, &(divutil_context.action), OB_SETTINGS},
-      {"verbosity", 0, &(divutil_context.action), OB_VERBOSITY},
+      {"verbosity", required_argument, &(divutil_context.action), OB_VERBOSITY},
       {0, 0, 0, 0}
     };
 
@@ -92,7 +92,7 @@ int
   status = ST_OK;
   found_something = 0;
   ctx->uid_size = OB_UID_SIZE;
-  ctx->verbosity = 9;
+  ctx->verbosity = 3;
   fprintf(LOG, "divutil %s\n", OPENBADGER_VERSION);
 
   done = 0;
@@ -128,6 +128,11 @@ fprintf(stderr, "DEBUG: json load /opt/tester/etc/openbadger-settings.json or lo
       status = ST_OK;
       found_something = 1;
       break;
+    case OB_VERBOSITY:
+      found_something = 1;
+      sscanf(optarg, "%d", &i);
+      ctx->verbosity = i;
+      break;
 
     case OB_HELP:
       found_something = 1;
@@ -147,6 +152,8 @@ fprintf(stderr, "DEBUG: json load /opt/tester/etc/openbadger-settings.json or lo
   };
   if (status EQUALS ST_OK)
   {
+    if (ctx->verbosity > 3)
+      fprintf(LOG, " Verbosity: %d\n", ctx->verbosity);
     fprintf(LOG, "Secret Key: %s\n", string_hex_buffer(ctx, ctx->secret_key, OB_KEY_SIZE_10957));
     fprintf(LOG, "       UID: %s\n", string_hex_buffer(ctx, ctx->uid, ctx->uid_size));
 
@@ -162,8 +169,8 @@ fprintf(stderr, "DEBUG: json load /opt/tester/etc/openbadger-settings.json or lo
     if (selftest)
     {
       comparison = memcmp(expected_K0, K0, OB_KEY_SIZE_10957);
-      if (ctx->verbosity > 3)
-        fprintf(stderr, "K0 compare %d.\n", comparison);
+      if (ctx->verbosity > 9)
+        fprintf(stderr, "K0 compare test returned %d.\n", comparison);
       if (comparison != 0)
         fprintf(LOG, "K0 mismatch:\n    Calc %s\nExpected %s\n",
           string_hex_buffer(ctx, K0, sizeof(K0)),
@@ -178,17 +185,23 @@ fprintf(stderr, "DEBUG: json load /opt/tester/etc/openbadger-settings.json or lo
   {
     fprintf(LOG, "---> Step 1 Generate K1 <---\n");
 
-    array_shift_left(K0, K1);
+    /*
+      if the most significant bit of K0 is a 1, K1 is K0 shifted left by 1 bit.
+
+      if the MSB of K0 is a 0, K1 is K0 << 1 xor'd with 0x00...87
+    */ 
+    array_shift_left(ctx, K0, K1);
+    memcpy(K1_new, K1, sizeof(K1_new));
     if (0x80 & K0 [0])
     {
       fprintf(LOG, "K0 MSB was 1\n");
-      array_xor(K1, xor_K1);
+      array_xor(ctx, K1_new, K1, xor_K1);
     }
     else
     {
       fprintf(LOG, "K0 MSB was 0\n");
     };
-    array_xor(K1, xor_K1);    
+    memcpy(K1, K1_new, sizeof(K1));
 
     fprintf(LOG, "        K1: %s\n", string_hex_buffer(ctx, K1, OB_KEY_SIZE_10957));
   };

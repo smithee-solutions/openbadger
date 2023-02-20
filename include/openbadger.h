@@ -45,5 +45,8 @@ typedef struct
 #define STOB_NO_ARGUMENTS    (1)
 #define STOB_NOT_IMPLEMENTED (2)
 
+
+void array_shift_left(OB_CONTEXT *ctx, unsigned char *from, unsigned char *to);
+void array_xor(OB_CONTEXT *ctx, unsigned char *result, unsigned char *xor_left, unsigned char *xor_right);
 char *string_hex_buffer(OB_CONTEXT *ctx, unsigned char *buf, int buf_lth);
 

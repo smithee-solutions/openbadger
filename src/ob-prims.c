@@ -26,18 +26,16 @@ char
   *buffer_dump_string
     (OB_CONTEXT *ctx,
     unsigned char *buffer,
-    int buffer_length,
+    int buffer_size,
     char *tag)
 
 { /* buffer_dump_string */
 
-  int buffer_size;
   int i;
   static char string_buffer [8*OB_STRING_MAX];
   char tmps [OB_STRING_MAX];
 
 
-  buffer_size = OB_KEY_SIZE_10957;
   sprintf(string_buffer, "%s", tag);
   for (i=0; i<buffer_size; i++)
   {
@@ -106,15 +104,14 @@ void
     (OB_CONTEXT *ctx,
     unsigned char *result,
     unsigned char *xor_left,
-    unsigned char *xor_right)
+    unsigned char *xor_right,
+    int buffer_size)
 
 { /* array_xor */
 
-  int buffer_size;
   int i;
 
 
-  buffer_size = OB_KEY_SIZE_10957;
   if (ctx->verbosity > 3)
     fprintf(LOG, "%s", buffer_dump_string(ctx, xor_left, buffer_size, "XOR (Left):"));
   if (ctx->verbosity > 3)
@@ -133,7 +130,7 @@ void
     fprintf(stderr, "\n");
   };
   if (ctx->verbosity > 3)
-    fprintf(LOG, "%s", buffer_dump_string(ctx, result, buffer_size, "XOR Results:"));
+    fprintf(LOG, "%s", buffer_dump_string(ctx, result, buffer_size, "XOR Results: "));
 
 } /* array_xor */
 

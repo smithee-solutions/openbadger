@@ -28,8 +28,11 @@
 #include <openbadger.h>
 #include <openbadger-version.h>
 extern unsigned char secret_key_default [];
+extern unsigned char uid_default [];
+extern int uid_default_size;
 extern unsigned char expected_K0 [];
 extern unsigned char xor_K1 [];
+extern unsigned char xor_K2 [];
 
 
 int
@@ -45,9 +48,13 @@ int
   struct AES_ctx crypto_context;
 
 
+  if (ctx->verbosity > 3)
+    fprintf(LOG, "%s", buffer_dump_string(ctx, plaintext, *length, "encrypt: plaintext input: "));
   memcpy(ciphertext, plaintext, *length);
   AES_init_ctx_iv(&crypto_context, ctx->secret_key, ctx->iv);
   AES_CBC_encrypt_buffer(&crypto_context, ciphertext, *length);
+  if (ctx->verbosity > 3)
+    fprintf(LOG, "%s", buffer_dump_string(ctx, ciphertext, *length, "encrypt: ciphertext output: "));
   return(ST_OK);
 
 } /* aes_encrypt */
@@ -62,6 +69,10 @@ int
 
   int comparison;
   OB_CONTEXT *ctx;
+  unsigned char div_encrypted [2*OB_KEY_SIZE_10957];
+  unsigned char div_input [2*OB_KEY_SIZE_10957];
+  unsigned char div_input_2 [2*OB_KEY_SIZE_10957];
+  unsigned char div_input_new [2*OB_KEY_SIZE_10957];
   OB_CONTEXT divutil_context;
   int done;
   int encrypted_length;
@@ -71,6 +82,8 @@ int
   unsigned char K0_plaintext [OB_KEY_SIZE_10957];
   unsigned char K1 [OB_KEY_SIZE_10957];
   unsigned char K1_new [OB_KEY_SIZE_10957];
+  unsigned char K2 [OB_KEY_SIZE_10957];
+  unsigned char K2_new [OB_KEY_SIZE_10957];
   int longindex;
   char optstring [OB_STRING_MAX];
   int selftest;
@@ -154,6 +167,13 @@ fprintf(stderr, "DEBUG: json load /opt/tester/etc/openbadger-settings.json or lo
   {
     if (ctx->verbosity > 3)
       fprintf(LOG, " Verbosity: %d\n", ctx->verbosity);
+
+    if (selftest)
+    {
+      ctx->uid_size = uid_default_size;
+      memcpy(ctx->uid, uid_default, uid_default_size);
+    };
+
     fprintf(LOG, "Secret Key: %s\n", string_hex_buffer(ctx, ctx->secret_key, OB_KEY_SIZE_10957));
     fprintf(LOG, "       UID: %s\n", string_hex_buffer(ctx, ctx->uid, ctx->uid_size));
 
@@ -195,7 +215,7 @@ fprintf(stderr, "DEBUG: json load /opt/tester/etc/openbadger-settings.json or lo
     if (0x80 & K0 [0])
     {
       fprintf(LOG, "K0 MSB was 1\n");
-      array_xor(ctx, K1_new, K1, xor_K1);
+      array_xor(ctx, K1_new, K1, xor_K1, OB_KEY_SIZE_10957);
     }
     else
     {
@@ -205,12 +225,61 @@ fprintf(stderr, "DEBUG: json load /opt/tester/etc/openbadger-settings.json or lo
 
     fprintf(LOG, "        K1: %s\n", string_hex_buffer(ctx, K1, OB_KEY_SIZE_10957));
   };
-// generate K2: if msb K1 - then K2=K1<<1
-// else K2 = (K1 <<1) xori 0x00...87
-// div_input (31 bytes)  is div constant 0x01 plus UID plus 0x80 padding (aes-128 bits?)
-// xor K2 with div input
-// encrypt with secret key
-// take last 16 byte block of enc result
+  if (status EQUALS ST_OK)
+  {
+    fprintf(LOG, "---> Step 2 Create DIV Input <---\n");
+
+    if (ctx->verbosity > 3)
+      fprintf(LOG, "%s", buffer_dump_string(ctx, K1, OB_KEY_SIZE_10957, "K1 input to step 2:"));
+    /*
+      if the most significant bit of K1 is a 1, K2 is K1 shifted left by 1 bit.
+
+      if the MSB of K1 is a 0, K2 is K1 << 1 xor'd with 0x00...87
+    */ 
+    array_shift_left(ctx, K1, K2);
+    memcpy(K2_new, K2, sizeof(K2_new));
+    if (0x80 & K1 [0])
+    {
+      fprintf(LOG, "K1 MSB was 1\n");
+      array_xor(ctx, K2_new, K2, xor_K2, OB_KEY_SIZE_10957);
+    }
+    else
+    {
+      fprintf(LOG, "K2 MSB was 0\n");
+    };
+    memcpy(K2, K2_new, sizeof(K2));
+
+    fprintf(LOG, "        K2: %s\n", string_hex_buffer(ctx, K2, OB_KEY_SIZE_10957));
+  };
+  if (status EQUALS ST_OK)
+  {
+    fprintf(LOG, "---> Step 1 Generate K2 <---\n");
+
+    memset(div_input, 0, sizeof(div_input));
+    div_input [0] = 0x01;
+    memcpy(div_input+1, uid_default, uid_default_size);
+    div_input [1+uid_default_size] = 0x80; // padding start
+    fprintf(LOG, "%s", buffer_dump_string(ctx, div_input, sizeof(div_input), "DIV Input "));
+  };
+  if (status EQUALS ST_OK)
+  {
+    fprintf(LOG, "---> Step 3 XOR DIV and K2 <---\n");
+
+    memset(div_input_2, 0, sizeof(div_input_2));
+    memcpy(div_input_2+OB_KEY_SIZE_10957, K2, OB_KEY_SIZE_10957);
+    array_xor(ctx, div_input_new, div_input, div_input_2, 2*OB_KEY_SIZE_10957);
+    fprintf(LOG, "%s", buffer_dump_string(ctx, div_input_new, 2*OB_KEY_SIZE_10957, "DIV xor'd with K2 "));
+  };
+  if (status EQUALS ST_OK)
+  {
+    fprintf(LOG, "---> Step 4 Encrypt DIV string with Secret Key <---\n");
+    encrypted_length = 2*OB_KEY_SIZE_10957;
+    status = aes_encrypt(ctx, div_input_new, div_encrypted, ctx->secret_key, &encrypted_length);
+    if (status EQUALS ST_OK)
+      fprintf(LOG, "%s", buffer_dump_string(ctx, div_encrypted, 2*OB_KEY_SIZE_10957, "DIV encrypted "));
+  };
+  if (status EQUALS ST_OK)
+    fprintf(LOG, "%s", buffer_dump_string(ctx, div_encrypted+OB_KEY_SIZE_10957, OB_KEY_SIZE_10957, "Diversified key: "));
 
   if (status != 0)
     fprintf(LOG, "divutil exit status %d.\n", status);

@@ -47,6 +47,7 @@ typedef struct
 
 
 void array_shift_left(OB_CONTEXT *ctx, unsigned char *from, unsigned char *to);
-void array_xor(OB_CONTEXT *ctx, unsigned char *result, unsigned char *xor_left, unsigned char *xor_right);
+void array_xor(OB_CONTEXT *ctx, unsigned char *result, unsigned char *xor_left, unsigned char *xor_right, int length);
+char *buffer_dump_string(OB_CONTEXT *ctx, unsigned char *buffer, int buffer_length, char *tag);
 char *string_hex_buffer(OB_CONTEXT *ctx, unsigned char *buf, int buf_lth);
 

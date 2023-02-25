@@ -22,33 +22,6 @@
 #include <openbadger.h>
 
 
-char
-  *buffer_dump_string
-    (OB_CONTEXT *ctx,
-    unsigned char *buffer,
-    int buffer_size,
-    char *tag)
-
-{ /* buffer_dump_string */
-
-  int i;
-  static char string_buffer [8*OB_STRING_MAX];
-  char tmps [OB_STRING_MAX];
-
-
-  sprintf(string_buffer, "%s", tag);
-  for (i=0; i<buffer_size; i++)
-  {
-    sprintf(tmps, "%02X", buffer [i]);
-    strcat(string_buffer, tmps);
-  };
-  strcat(string_buffer, "\n");
-
-  return(string_buffer);
-
-} /* buffer_dump_string */
-
-
 void
   array_shift_left
     (OB_CONTEXT *ctx,
@@ -133,6 +106,62 @@ void
     fprintf(LOG, "%s", buffer_dump_string(ctx, result, buffer_size, "XOR Results: "));
 
 } /* array_xor */
+
+
+char
+  *buffer_dump_string
+    (OB_CONTEXT *ctx,
+    unsigned char *buffer,
+    int buffer_size,
+    char *tag)
+
+{ /* buffer_dump_string */
+
+  int i;
+  static char string_buffer [8*OB_STRING_MAX];
+  char tmps [OB_STRING_MAX];
+
+
+  sprintf(string_buffer, "%s", tag);
+  for (i=0; i<buffer_size; i++)
+  {
+    sprintf(tmps, "%02X", buffer [i]);
+    strcat(string_buffer, tmps);
+  };
+  strcat(string_buffer, "\n");
+
+  return(string_buffer);
+
+} /* buffer_dump_string */
+
+
+unsigned char
+  *string_buffer_hex
+    (OB_CONTEXT *ctx,
+    const char *buf,
+    int *buf_lth)
+
+{ /* string_buffer_hex */
+
+  int i;
+  static unsigned char octets [1024];
+  char tmps [3];
+
+
+  tmps [2] = 0;
+  *buf_lth = 0;
+  for (i=0; i<strlen(buf); i=i+2)
+  {
+    int j;
+
+    memcpy(tmps, buf+i, 2);
+    sscanf(tmps, "%x", &j);
+    octets [*buf_lth] = j;
+    (*buf_lth)++;
+  };
+  return(octets);
+  
+} /* string_buffer_hex */
 
 
 char

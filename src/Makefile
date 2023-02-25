@@ -34,26 +34,6 @@ build:	all
 	mkdir -p ../opt/tester/bin
 	cp ${PROGS} ../opt/tester/bin
 
-create-OES-contents:	create-OES-contents.o \
-	  oes-prims.o oes-messages.o Makefile
-	${LINK} -o create-OES-contents create-OES-contents.o \
-	  oes-prims.o oes-messages.o ${LDFLAGS}
-
-create-OES-contents.o:	create-OES-contents.c ../../include/card-whisperer-version.h
-	${CC} ${CFLAGS} create-OES-contents.c
-
-oes-messages.o:	oes-messages.c
-	${CC} ${CFLAGS} oes-messages.c
-
-oes-prims.o:	oes-prims.c
-	${CC} ${CFLAGS} oes-prims.c
-
-read_mifare:	read_mifare.o Makefile
-	${LINK} -o read_mifare -g read_mifare.o ${LDFLAGS}
-
-read_mifare.o:	read_mifare.c
-	${CC} ${CFLAGS} read_mifare.c
-
 divutil:	divutil.o ob-keys.o ob-prims.o Makefile
 	${LINK} -o divutil divutil.o ob-keys.o ob-prims.o ${LDFLAGS}
 

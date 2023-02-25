@@ -1,0 +1,7 @@
+run make from the top level.
+
+assumes libjansson-dev package is installed
+
+assumes https://github/kokke/tiny-AES-c is installed with files in /opt/tester
+(see src/Makefile for pointers)
+

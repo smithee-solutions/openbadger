@@ -20,6 +20,8 @@
 
 #define LOG stdout
 
+#define OB_SETTINGS_FILE_DEFAULT "/opt/tester/etc/openbadger-settings.json"
+
 #define OB_NOOP      (0)
 #define OB_HELP      (1)
 #define OB_VERBOSITY (2)
@@ -49,5 +51,6 @@ typedef struct
 void array_shift_left(OB_CONTEXT *ctx, unsigned char *from, unsigned char *to);
 void array_xor(OB_CONTEXT *ctx, unsigned char *result, unsigned char *xor_left, unsigned char *xor_right, int length);
 char *buffer_dump_string(OB_CONTEXT *ctx, unsigned char *buffer, int buffer_length, char *tag);
+unsigned char *string_buffer_hex(OB_CONTEXT *ctx, const char *buf, int *buf_lth);
 char *string_hex_buffer(OB_CONTEXT *ctx, unsigned char *buf, int buf_lth);
 

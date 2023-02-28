@@ -1,5 +1,4 @@
 # Make file for credential component construction tools
-# includes AN10957 stuff
 
 #  Copyright 2017-2023 Smithee Solutions LLC
 #
@@ -16,7 +15,7 @@
 #  limitations under the License.
 
 
-PROGS=divutil
+PROGS=divutil sigutil
 
 
 CC=clang
@@ -37,6 +36,9 @@ build:	all
 divutil:	divutil.o ob-keys.o ob-prims.o Makefile
 	${LINK} -o divutil divutil.o ob-keys.o ob-prims.o ${LDFLAGS}
 
+sigutil:	sigutil.o Makefile ob-keys.o ob-prims.o
+	${LINK} -o sigutil sigutil.o ob-keys.o ob-prims.o ${LDFLAGS}
+
 divutil.o:	divutil.c ../include/openbadger.h ../include/openbadger-version.h
 	${CC} ${CFLAGS} divutil.c
 
@@ -45,4 +47,7 @@ ob-keys.o:	ob-keys.c ../include/openbadger.h
 
 ob-prims.o:	ob-prims.c ../include/openbadger.h
 	${CC} ${CFLAGS} ob-prims.c
+
+sigutil.o:	sigutil.c ../include/openbadger.h ../include/openbadger-version.h
+	${CC} ${CFLAGS} sigutil.c
 

@@ -25,10 +25,14 @@
 #include <aes.h>
 
 
+#pragma pack(1)
+#include <openbadger-an10957.h>
 #include <openbadger.h>
 #include <openbadger-version.h>
 extern unsigned char secret_key_default [];
 OB_CONTEXT sigutil_context;
+OB_PACS_DATA_OBJECT PACS_data;
+extern unsigned char PACS_data_object_default [];
 int selftest;
 
 
@@ -66,6 +70,7 @@ int
   status = ST_OK;
   fprintf(LOG, "divutil %s\n", OPENBADGER_VERSION);
   memset(ctx, 0, sizeof(*ctx));
+  memset(&PACS_data, 0, sizeof(PACS_data));
 
   ctx->verbosity = 3;
   ctx->uid_size = OB_UID_SIZE;
@@ -118,6 +123,7 @@ fprintf(stderr, "DEBUG: json load as details\n");
     case OB_SELFTEST:
       fprintf(LOG, "Self-test selected, loading parameters.\n");
       memcpy(ctx->secret_key, &secret_key_default, OB_KEY_SIZE_10957);
+      memcpy(&PACS_data, PACS_data_object_default, sizeof(PACS_data));
       status = ST_OK;
       selftest = 1;
       found_something = 1;
@@ -167,8 +173,10 @@ if (selftest)
 {
   fprintf(stderr, "DEBUG: selftest selected\n");
 };
+  fprintf(LOG, "PACS Data Object is %lu. bytes\n", sizeof(PACS_data));
+  display_PACS_data_object(ctx, &PACS_data);
   return(status);
-}
+} /* main for sigutil */
 
 
 

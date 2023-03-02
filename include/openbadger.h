@@ -50,7 +50,9 @@ typedef struct
 
 void array_shift_left(OB_CONTEXT *ctx, unsigned char *from, unsigned char *to);
 void array_xor(OB_CONTEXT *ctx, unsigned char *result, unsigned char *xor_left, unsigned char *xor_right, int length);
+char *bcd_to_string(unsigned char *bcd_buffer, int byte_length);
 char *buffer_dump_string(OB_CONTEXT *ctx, unsigned char *buffer, int buffer_length, char *tag);
+void display_PACS_data_object(OB_CONTEXT *ctx, OB_PACS_DATA_OBJECT *PACS_data_object);
 unsigned char *string_buffer_hex(OB_CONTEXT *ctx, const char *buf, int *buf_lth);
 char *string_hex_buffer(OB_CONTEXT *ctx, unsigned char *buf, int buf_lth);
 

@@ -19,6 +19,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#pragma pack(1)
+#include <openbadger-an10957.h>
 #include <openbadger.h>
 
 
@@ -109,6 +111,46 @@ void
 
 
 char
+  *bcd_in_byte
+    (unsigned char byte)
+{
+  static char bcd_digits [3];
+  unsigned char hexit;
+
+
+  bcd_digits [2] = 0;
+  hexit = byte >> 4;
+  if ((hexit >=0) && (hexit <= 9))
+  {
+    sprintf(bcd_digits, "%d", hexit);
+  };
+  hexit = byte & 0x0f;
+  if ((hexit >=0) && (hexit <= 9))
+  {
+    sprintf(bcd_digits+1, "%d", hexit);
+  };
+  return(bcd_digits);
+}
+
+
+char
+  *bcd_to_string
+    (unsigned char *bcd_buffer,
+    int byte_length)
+{
+  static char bcd_string [1024];
+  int i;
+
+
+  for (i=0; i<byte_length; i++)
+  {
+    strcat(bcd_string, bcd_in_byte(*(bcd_buffer+i)));
+  };
+  return(bcd_string);
+}
+
+
+char
   *buffer_dump_string
     (OB_CONTEXT *ctx,
     unsigned char *buffer,
@@ -133,6 +175,21 @@ char
   return(string_buffer);
 
 } /* buffer_dump_string */
+
+
+void
+  display_PACS_data_object
+  (OB_CONTEXT *ctx,
+  OB_PACS_DATA_OBJECT *PACS_data_object)
+
+{ /* display_PACS_data_object */
+
+  fprintf(LOG, "PACS Data Object\n");
+  fprintf(LOG, "----------------\n");
+  fprintf(LOG, "Version %02X.%02X\n", PACS_data_object->version_major, PACS_data_object->version_minor);
+  fprintf(LOG, "Customer / Site Code %s\n", bcd_to_string(PACS_data_object->site_customer, sizeof(PACS_data_object->site_customer)));
+
+} /* display_PACS_data_object */
 
 
 unsigned char

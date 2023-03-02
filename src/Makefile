@@ -45,9 +45,9 @@ divutil.o:	divutil.c ../include/openbadger.h ../include/openbadger-version.h
 ob-keys.o:	ob-keys.c ../include/openbadger.h
 	${CC} ${CFLAGS} ob-keys.c
 
-ob-prims.o:	ob-prims.c ../include/openbadger.h
+ob-prims.o:	ob-prims.c ../include/openbadger.h ../include/openbadger-an10957.h
 	${CC} ${CFLAGS} ob-prims.c
 
-sigutil.o:	sigutil.c ../include/openbadger.h ../include/openbadger-version.h
+sigutil.o:	sigutil.c ../include/openbadger.h ../include/openbadger-version.h ../include/openbadger-an10957.h
 	${CC} ${CFLAGS} sigutil.c
 

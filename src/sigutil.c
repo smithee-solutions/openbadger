@@ -73,7 +73,12 @@ int
   memset(&PACS_data, 0, sizeof(PACS_data));
 
   ctx->verbosity = 3;
+
+  /*
+    parameters we can likely initailize once.
+  */
   ctx->uid_size = OB_UID_SIZE;
+
   strcpy(settings_filename, OB_SETTINGS_FILE_DEFAULT);
   settings = json_load_file(settings_filename, 0, &status_json);
   if (settings != NULL)
@@ -85,7 +90,7 @@ int
       ctx->verbosity = i;
     };
     if (ctx->verbosity > 3)
-      fprintf(LOG, "divutil: settings file %s loaded.\n", OB_SETTINGS_FILE_DEFAULT);
+      fprintf(LOG, "sigutil: settings file %s loaded.\n", OB_SETTINGS_FILE_DEFAULT);
 
     value = json_object_get(settings, "UID");
     if (json_is_string(value))
@@ -160,6 +165,7 @@ fprintf(stderr, "DEBUG: json load as details\n");
 
 } /* initialize_sigutil */
 
+
 int main (int argc, char *argv [])
 {
   OB_CONTEXT *ctx;
@@ -175,7 +181,9 @@ if (selftest)
 };
   fprintf(LOG, "PACS Data Object is %lu. bytes\n", sizeof(PACS_data));
   display_PACS_data_object(ctx, &PACS_data);
+  fprintf(LOG, "       UID: %s\n", string_hex_buffer(ctx, ctx->uid, ctx->uid_size));
   return(status);
+
 } /* main for sigutil */
 
 

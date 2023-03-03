@@ -138,10 +138,11 @@ char
     (unsigned char *bcd_buffer,
     int byte_length)
 {
-  static char bcd_string [1024];
+  static char bcd_string [OB_STRING_MAX];
   int i;
 
 
+  memset(bcd_string, 0, sizeof(bcd_string));
   for (i=0; i<byte_length; i++)
   {
     strcat(bcd_string, bcd_in_byte(*(bcd_buffer+i)));
@@ -184,11 +185,20 @@ void
 
 { /* display_PACS_data_object */
 
+  int i;
+
+
   fprintf(LOG, "PACS Data Object\n");
   fprintf(LOG, "----------------\n");
   fprintf(LOG, "Version %02X.%02X\n", PACS_data_object->version_major, PACS_data_object->version_minor);
   fprintf(LOG, "Customer / Site Code %s\n", bcd_to_string(PACS_data_object->site_customer, sizeof(PACS_data_object->site_customer)));
-
+  fprintf(LOG, "Credential ID %s\n", bcd_to_string(PACS_data_object->credential_ID, sizeof(PACS_data_object->credential_ID)));
+  fprintf(LOG, "Reissue Code %s\n", bcd_to_string(&(PACS_data_object->reissue_code), sizeof(PACS_data_object->reissue_code)));
+  fprintf(LOG, "PIN Code %s\n", bcd_to_string(PACS_data_object->PIN_code, sizeof(PACS_data_object->PIN_code)));
+  fprintf(LOG, "Customer Specific Data ");
+  for (i=0; i<sizeof(PACS_data_object->customer_specific_data); i++)
+    fprintf(LOG, "%02X", PACS_data_object->customer_specific_data [i]);
+  fprintf(LOG, "\n");
 } /* display_PACS_data_object */
 
 

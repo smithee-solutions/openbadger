@@ -19,7 +19,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#pragma pack(1)
 #include <openbadger-an10957.h>
 #include <openbadger.h>
 

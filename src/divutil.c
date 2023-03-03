@@ -25,7 +25,6 @@
 #include <aes.h>
 
 
-#pragma pack(1)
 #include <openbadger-an10957.h>
 #include <openbadger.h>
 #include <openbadger-version.h>

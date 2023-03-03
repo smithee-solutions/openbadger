@@ -16,9 +16,7 @@
   limitations under the License.
 */
 
-#pragma pack(1)
-
-typedef struct ob_pacs_data_object
+typedef struct __attribute__((packed)) ob_pacs_data_object
 {
   unsigned char version_major;
   unsigned char version_minor;

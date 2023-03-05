@@ -77,9 +77,10 @@ int
 
   status = ST_OK;
 
+  ctx->tool_identifier = OB_TOOL_DIVUTIL;
   ctx->verbosity = 3;
   ctx->uid_size = OB_UID_SIZE;
-  strcpy(settings_filename, OB_SETTINGS_FILE_DEFAULT);
+  strcpy(settings_filename, OB_SYSTEM_SETTINGS_FILE);
   
   settings = json_load_file(settings_filename, 0, &status_json);
   if (settings != NULL)
@@ -92,7 +93,7 @@ int
     };
 
     if (ctx->verbosity > 3)
-      fprintf(LOG, "divutil: settings file %s loaded.\n", OB_SETTINGS_FILE_DEFAULT);
+      fprintf(LOG, "divutil: settings file %s loaded.\n", OB_SYSTEM_SETTINGS_FILE);
 
     value = json_object_get(settings, "UID");
     if (json_is_string(value))
@@ -143,7 +144,6 @@ int
   int status_opt;
   struct option
     longopts [] = {
-      {"details", required_argument, &(divutil_context.action), OB_DETAILS},
       {"help", 0, &(divutil_context.action), OB_HELP},
       {"selftest", 0, &(divutil_context.action), OB_SELFTEST},
       {"settings", required_argument, &(divutil_context.action), OB_SETTINGS},
@@ -168,14 +168,6 @@ int
         ctx->action = OB_HELP;
     switch (ctx->action)
     {
-    case OB_DETAILS:
-fprintf(stderr, "DEBUG: json load as details\n");
-// load value "uid", infer length from decode of hex
-// load value "secret-key", must be 128 bit value
-      status = ST_OK;
-      found_something = 1;
-      break;
-
     case OB_NOOP:
       // stay silent if looping around after an option was found.
       break;

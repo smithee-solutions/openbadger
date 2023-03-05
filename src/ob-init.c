@@ -1,5 +1,6 @@
 /*
-  sigutil - AN10957 CMAC signature Utility
+  ob-init - common initialization routines
+
 
   (C)Copyright 2023 Smithee Solutions LLC
 
@@ -17,6 +18,95 @@
 */
 
 
+//#include <stdio.h>
+#include <string.h>
+#include <getopt.h>
+
+#include <jansson.h>
+
+
+#include <openbadger-an10957.h>
+#include <openbadger.h>
+OB_CONTEXT openbadger_context;
+struct option
+  longopts [] = {
+    {"help", 0, &(openbadger_context.action), OB_HELP},
+    {"selftest", 0, &(openbadger_context.action), OB_SELFTEST},
+    {"settings", required_argument, &(openbadger_context.action), OB_SETTINGS},
+    {"verbosity", required_argument, &(openbadger_context.action), OB_VERBOSITY},
+    {0, 0, 0, 0}
+  };
+
+
+int
+  openbadger_initialize
+    (OB_CONTEXT **initialized_context,
+    char *settings_filename)
+
+{ /* openbadger_initialize */
+
+  OB_CONTEXT *ctx;
+  int i;
+  json_t *settings;
+  int status;
+  json_error_t status_json;
+  json_t *value;
+
+
+  status = ST_OK;
+
+  ctx = &openbadger_context;
+  if (initialized_context != NULL)
+  {
+    *initialized_context = &openbadger_context;
+    memset(ctx, 0, sizeof(*ctx));
+
+    // default program settings
+    ctx->verbosity = 3;
+
+    // default credential settinga
+
+    ctx->uid_size = OB_UID_SIZE;
+  };
+
+  // read the designated settings file
+
+  settings = json_load_file(settings_filename, 0, &status_json);
+  if (settings EQUALS NULL)
+  {
+    if (ctx->verbosity > 3)
+      fprintf(LOG, "Can't read settings file %s (error %s)\n",
+        settings_filename, status_json.text);
+    status = STOB_SETTINGS_ERROR;
+  };
+
+  if ((status EQUALS ST_OK) && (settings != NULL))
+  {
+    value = json_object_get(settings, "verbosity");
+    if (json_is_string(value))
+    {
+      sscanf(json_string_value(value), "%d", &i);
+      ctx->verbosity = i;
+    };
+
+    if (ctx->verbosity > 3)
+      fprintf(LOG, "settings file %s loaded.\n", settings_filename);
+
+    value = json_object_get(settings, "UID");
+    if (json_is_string(value))
+    {
+      int uid_length;
+
+      memcpy(ctx->uid, string_buffer_hex(ctx, json_string_value(value), &uid_length), sizeof(ctx->uid));
+    };
+  };
+
+  return(status);
+
+} /* openbadger_initialize */
+
+#if 0
+
 #include <stdio.h>
 #include <string.h>
 #include <getopt.h>
@@ -25,133 +115,8 @@
 #include <aes.h>
 
 
-#include <openbadger-an10957.h>
-#include <openbadger.h>
 #include <openbadger-version.h>
 extern unsigned char secret_key_default [];
-OB_PACS_DATA_OBJECT PACS_data;
-extern unsigned char PACS_data_object_default [];
-int selftest;
-
-
-int
-  initialize_sigutil
-    (OB_CONTEXT **new_ctx,
-    int argc,
-    char *argv [])
-
-{ /* initialize_sigutil */
-
-  OB_CONTEXT *ctx;
-  int done;
-  int found_something;
-  int i;
-  int longindex;
-  extern struct option longopts [];
-  char optstring [OB_STRING_MAX];
-  int status;
-  int status_opt;
-
-
-  status = openbadger_initialize(new_ctx, OB_SYSTEM_SETTINGS_FILE);
-  ctx = *new_ctx;
-  if (status EQUALS STOB_SETTINGS_ERROR)
-  {
-    if (ctx->verbosity > 3)
-      fprintf(LOG, "Error reading settings from %s\n", OB_SYSTEM_SETTINGS_FILE);
-    status = ST_OK;
-  };
-  if (status EQUALS ST_OK)
-  {
-    status = openbadger_initialize(NULL, OB_LOCAL_SETTINGS_FILE);
-    if (status EQUALS STOB_SETTINGS_ERROR)
-    {
-      if (ctx->verbosity > 3)
-        fprintf(LOG, "Error reading settings from %s\n", OB_LOCAL_SETTINGS_FILE);
-      status = ST_OK;
-    };
-  };
-
-  ctx->tool_identifier = OB_TOOL_SIGUTIL;
-  fprintf(LOG, "sigutil %s\n", OPENBADGER_VERSION);
-  memset(&PACS_data, 0, sizeof(PACS_data));
-
-  found_something = 0;
-  done = 0;
-  while (!done)
-  {
-    status_opt = getopt_long (argc, argv, optstring, longopts, &longindex);
-    if (!found_something)
-      if (status_opt EQUALS -1)
-        ctx->action = OB_HELP;
-    switch (ctx->action)
-    {
-    case OB_NOOP:
-      // stay silent if looping around after an option was found.
-      break;
-
-    case OB_SELFTEST:
-      fprintf(LOG, "Self-test selected, loading parameters.\n");
-      memcpy(ctx->secret_key, &secret_key_default, OB_KEY_SIZE_10957);
-      memcpy(&PACS_data, PACS_data_object_default, sizeof(PACS_data));
-      status = ST_OK;
-      selftest = 1;
-      found_something = 1;
-      break;
-
-    case OB_SETTINGS:
-      found_something = 1;
-      // user specified their own settings file.  pile it on top of the others
-
-      status = openbadger_initialize(NULL, optarg);
-      if (status != ST_OK)
-        fprintf(LOG, "Error reading specified settings file (%s)\n", optarg);
-      break;
-
-    case OB_VERBOSITY:
-      found_something = 1;
-      sscanf(optarg, "%d", &i);
-      ctx->verbosity = i;
-      break;
-
-    case OB_HELP:
-      found_something = 1;
-      // fall through to default on purpose
-    default:
-      fprintf(LOG, "--help - display this help text.\n");
-      fprintf(LOG, "--verbosity (min 1 max 9)\n");
-      fprintf(LOG, "--details <json file> - details for this calculation\n");
-      fprintf(LOG, "--settings <json file> - configured settings for the tool\n");
-      fprintf(LOG, "--selftest - use the values in AN10957\n");
-      status = STOB_NO_ARGUMENTS;
-      break;
-    };
-    ctx->action = OB_NOOP; // reset from whatever getopt_long set it to
-    if (status_opt EQUALS -1)
-      done = 1;
-  };
-  return(status);
-
-} /* initialize_sigutil */
-
-
-int main (int argc, char *argv [])
-{
-  OB_CONTEXT *ctx;
-  int status;
-
-
-  status = initialize_sigutil(&ctx, argc, argv);
-  fprintf(LOG, "PACS Data Object is %lu. bytes\n", sizeof(PACS_data));
-  display_PACS_data_object(ctx, &PACS_data);
-  fprintf(LOG, "       UID: %s\n", string_hex_buffer(ctx, ctx->uid, ctx->uid_size));
-  return(status);
-
-} /* main for sigutil */
-
-
-
-#if 0
 extern unsigned char uid_default [];
 extern int uid_default_size;
 extern unsigned char expected_K0 [];
@@ -184,6 +149,24 @@ int
 } /* aes_encrypt */
 
 
+int
+  ob_init
+    (OB_CONTEXT *ctx)
+
+{ /* ob_init */
+
+  char settings_filename [1024];
+  int status;
+
+
+  status = ST_OK;
+
+  ctx->tool_identifier = OB_TOOL_DIVUTIL;
+  strcpy(settings_filename, OB_SETTINGS_FILE_DEFAULT);
+  
+  return(status);
+
+} /* ob_init */
 
 
 
@@ -201,7 +184,9 @@ int
   unsigned char div_input_2 [2*OB_KEY_SIZE_10957];
   unsigned char div_input_new [2*OB_KEY_SIZE_10957];
   OB_CONTEXT divutil_context;
+  int done;
   int encrypted_length;
+  int found_something;
   int i;
   unsigned char K0 [OB_KEY_SIZE_10957];
   unsigned char K0_plaintext [OB_KEY_SIZE_10957];
@@ -209,9 +194,25 @@ int
   unsigned char K1_new [OB_KEY_SIZE_10957];
   unsigned char K2 [OB_KEY_SIZE_10957];
   unsigned char K2_new [OB_KEY_SIZE_10957];
+  int longindex;
+  char optstring [OB_STRING_MAX];
+  int selftest;
   int status;
+  int status_opt;
+  struct option
+    longopts [] = {
+      {"details", required_argument, &(divutil_context.action), OB_DETAILS},
+      {"help", 0, &(divutil_context.action), OB_HELP},
+      {"selftest", 0, &(divutil_context.action), OB_SELFTEST},
+      {"settings", required_argument, &(divutil_context.action), OB_SETTINGS},
+      {"verbosity", required_argument, &(divutil_context.action), OB_VERBOSITY},
+      {0, 0, 0, 0}
+    };
 
 
+  ctx = &divutil_context;
+  memset(ctx, 0, sizeof(*ctx));
+  status = ST_OK;
   if (status EQUALS ST_OK)
   {
     if (ctx->verbosity > 3)

@@ -33,14 +33,17 @@ build:	all
 	mkdir -p ../opt/tester/bin
 	cp ${PROGS} ../opt/tester/bin
 
-divutil:	divutil.o ob-keys.o ob-prims.o Makefile
-	${LINK} -o divutil divutil.o ob-keys.o ob-prims.o ${LDFLAGS}
+divutil:	divutil.o ob-init.o ob-keys.o ob-prims.o Makefile
+	${LINK} -o divutil divutil.o ob-init.o ob-keys.o ob-prims.o ${LDFLAGS}
 
-sigutil:	sigutil.o Makefile ob-keys.o ob-prims.o
-	${LINK} -o sigutil sigutil.o ob-keys.o ob-prims.o ${LDFLAGS}
+sigutil:	sigutil.o Makefile ob-init.o ob-keys.o ob-prims.o
+	${LINK} -o sigutil sigutil.o ob-init.o ob-keys.o ob-prims.o ${LDFLAGS}
 
 divutil.o:	divutil.c ../include/openbadger.h ../include/openbadger-version.h
 	${CC} ${CFLAGS} divutil.c
+
+ob-init.o:	ob-init.c ../include/openbadger.h
+	${CC} ${CFLAGS} ob-init.c
 
 ob-keys.o:	ob-keys.c ../include/openbadger.h
 	${CC} ${CFLAGS} ob-keys.c

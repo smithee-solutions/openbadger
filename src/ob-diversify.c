@@ -28,20 +28,6 @@ extern unsigned char xor_K1 [];
 extern unsigned char xor_K2 [];
 
 
-#if 0
-
-#include <jansson.h>
-#include <aes.h>
-
-
-#include <openbadger-version.h>
-extern unsigned char secret_key_default [];
-extern unsigned char uid_default [];
-extern int uid_default_size;
-extern unsigned char expected_K0 [];
-#endif
-
-
 int
   diversify_AN10957
     (OB_CONTEXT *ctx)

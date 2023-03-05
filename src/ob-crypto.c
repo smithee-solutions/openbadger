@@ -43,12 +43,14 @@ int
 
 
   if (ctx->verbosity > 3)
-    fprintf(LOG, "%s", buffer_dump_string(ctx, plaintext, *length, "encrypt: plaintext input: "));
+    fprintf(LOG, "%s", buffer_dump_string(ctx, plaintext, *length, 
+"   encrypt:   plaintext input: "));
   memcpy(ciphertext, plaintext, *length);
   AES_init_ctx_iv(&crypto_context, ctx->secret_key, ctx->iv);
   AES_CBC_encrypt_buffer(&crypto_context, ciphertext, *length);
   if (ctx->verbosity > 3)
-    fprintf(LOG, "%s", buffer_dump_string(ctx, ciphertext, *length, "encrypt: ciphertext output: "));
+    fprintf(LOG, "%s", buffer_dump_string(ctx, ciphertext, *length, 
+"   encrypt: ciphertext output: "));
   return(ST_OK);
 
 } /* aes_encrypt */

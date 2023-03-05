@@ -87,14 +87,16 @@ void
 
 
   if (ctx->verbosity > 3)
-    fprintf(LOG, "%s", buffer_dump_string(ctx, xor_left, buffer_size, "XOR (Left):"));
+    fprintf(LOG, "%s", buffer_dump_string(ctx, xor_left, buffer_size,
+" XOR (Left):"));
   if (ctx->verbosity > 3)
-    fprintf(LOG, "%s", buffer_dump_string(ctx, xor_right, buffer_size, "XOR (Right):"));
+    fprintf(LOG, "%s", buffer_dump_string(ctx, xor_right, buffer_size,
+"XOR (Right):"));
   for (i=0; i<buffer_size; i++)
   {
     result [i] = xor_left [i] ^ xor_right [i];
   };
-  if (ctx->verbosity > 3)
+  if (ctx->verbosity > 9)
   {
     fprintf(stderr, "DEBUG: xor (size=%d) results:\n", buffer_size);
     for (i=0; i<buffer_size; i++)

@@ -87,6 +87,8 @@ int
     {
       sscanf(json_string_value(value), "%d", &i);
       ctx->verbosity = i;
+      if (ctx->verbosity > 3)
+        fprintf(LOG, "Verbosity has been set to %d\n", ctx->verbosity);
     };
 
     if (ctx->verbosity > 3)

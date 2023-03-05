@@ -85,8 +85,6 @@ int
   {
     fprintf(LOG, "---> Step 2 Create DIV Input <---\n");
 
-    if (ctx->verbosity > 3)
-      fprintf(LOG, "%s", buffer_dump_string(ctx, K1, OB_KEY_SIZE_10957, "K1 input to step 2:"));
     /*
       if the most significant bit of K1 is a 1, K2 is K1 shifted left by 1 bit.
 
@@ -124,7 +122,8 @@ int
     memset(div_input_2, 0, sizeof(div_input_2));
     memcpy(div_input_2+OB_KEY_SIZE_10957, K2, OB_KEY_SIZE_10957);
     array_xor(ctx, div_input_new, div_input, div_input_2, 2*OB_KEY_SIZE_10957);
-    fprintf(LOG, "%s", buffer_dump_string(ctx, div_input_new, 2*OB_KEY_SIZE_10957, "DIV xor'd with K2 "));
+    if (ctx->verbosity > 9)
+      fprintf(LOG, "%s", buffer_dump_string(ctx, div_input_new, 2*OB_KEY_SIZE_10957, "DIV xor'd with K2 "));
   };
   if (status EQUALS ST_OK)
   {

@@ -44,7 +44,6 @@ int
 
   OB_CONTEXT *ctx;
   int done;
-  int found_something;
   int i;
   int longindex;
   extern struct option longopts [];
@@ -53,6 +52,7 @@ int
   int status_opt;
 
 
+  fprintf(LOG, "sigutil %s\n", OPENBADGER_VERSION);
   status = openbadger_initialize(new_ctx, OB_SYSTEM_SETTINGS_FILE);
   ctx = *new_ctx;
   if (status EQUALS STOB_SETTINGS_ERROR)
@@ -73,19 +73,14 @@ int
   };
 
   ctx->tool_identifier = OB_TOOL_SIGUTIL;
-  fprintf(LOG, "sigutil %s\n", OPENBADGER_VERSION);
   memset(&PACS_data, 0, sizeof(PACS_data));
 fprintf(LOG, "DEBUG: pre-loading PACS_data\n");
 memcpy(&PACS_data, PACS_data_object_default, sizeof(PACS_data));
 
-  found_something = 0;
   done = 0;
   while (!done)
   {
     status_opt = getopt_long (argc, argv, optstring, longopts, &longindex);
-    if (!found_something)
-      if (status_opt EQUALS -1)
-        ctx->action = OB_HELP;
     switch (ctx->action)
     {
     case OB_NOOP:
@@ -98,11 +93,9 @@ memcpy(&PACS_data, PACS_data_object_default, sizeof(PACS_data));
       memcpy(&PACS_data, PACS_data_object_default, sizeof(PACS_data));
       status = ST_OK;
       selftest = 1;
-      found_something = 1;
       break;
 
     case OB_SETTINGS:
-      found_something = 1;
       // user specified their own settings file.  pile it on top of the others
 
       status = openbadger_initialize(NULL, optarg);
@@ -111,23 +104,17 @@ memcpy(&PACS_data, PACS_data_object_default, sizeof(PACS_data));
       break;
 
     case OB_VERBOSITY:
-      found_something = 1;
       sscanf(optarg, "%d", &i);
       ctx->verbosity = i;
       break;
 
     case OB_HELP:
-      found_something = 1;
       fprintf(LOG, "--help - display this help text.\n");
       fprintf(LOG, "--verbosity (min 1 max 9)\n");
       fprintf(LOG, "--details <json file> - details for this calculation\n");
       fprintf(LOG, "--settings <json file> - configured settings for the tool\n");
       fprintf(LOG, "--selftest - use the values in AN10957\n");
       status = ST_OK;
-      break;
-
-    default:
-      status = STOB_NO_ARGUMENTS;
       break;
     };
     ctx->action = OB_NOOP; // reset from whatever getopt_long set it to
@@ -146,11 +133,6 @@ int main (int argc, char *argv [])
 
 
   status = initialize_sigutil(&ctx, argc, argv);
-  if (status EQUALS STOB_NO_ARGUMENTS)
-  {
-    fprintf(LOG, "Signature Utility is in startup.\n");
-    status = ST_OK;
-  };
   fprintf(LOG, "PACS Data Object is %lu. bytes\n", sizeof(PACS_data));
   display_PACS_data_object(ctx, &PACS_data);
   fprintf(LOG, "Secret Key: %s\n", string_hex_buffer(ctx, ctx->secret_key, OB_KEY_SIZE_10957));

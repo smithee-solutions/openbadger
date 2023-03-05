@@ -37,31 +37,6 @@ extern unsigned char xor_K2 [];
 
 
 int
-  aes_encrypt
-    (OB_CONTEXT *ctx,
-    unsigned char *plaintext,
-    unsigned char *ciphertext,
-    unsigned char *key,
-    int *length)
-
-{ /* aes_encrypt */
-
-  struct AES_ctx crypto_context;
-
-
-  if (ctx->verbosity > 3)
-    fprintf(LOG, "%s", buffer_dump_string(ctx, plaintext, *length, "encrypt: plaintext input: "));
-  memcpy(ciphertext, plaintext, *length);
-  AES_init_ctx_iv(&crypto_context, ctx->secret_key, ctx->iv);
-  AES_CBC_encrypt_buffer(&crypto_context, ciphertext, *length);
-  if (ctx->verbosity > 3)
-    fprintf(LOG, "%s", buffer_dump_string(ctx, ciphertext, *length, "encrypt: ciphertext output: "));
-  return(ST_OK);
-
-} /* aes_encrypt */
-
-
-int
   ob_init
     (OB_CONTEXT *ctx)
 

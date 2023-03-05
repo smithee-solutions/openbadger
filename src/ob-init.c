@@ -92,6 +92,14 @@ int
     if (ctx->verbosity > 3)
       fprintf(LOG, "settings file %s loaded.\n", settings_filename);
 
+    value = json_object_get(settings, "secret-key");
+    if (json_is_string(value))
+    {
+      int secret_key_length;
+      secret_key_length = sizeof(ctx->secret_key);
+      memcpy(ctx->secret_key, string_buffer_hex(ctx, json_string_value(value), &secret_key_length), sizeof(ctx->secret_key));
+    };
+
     value = json_object_get(settings, "UID");
     if (json_is_string(value))
     {

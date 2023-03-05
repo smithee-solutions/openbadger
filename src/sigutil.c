@@ -1,3 +1,14 @@
+#if 0
+
+aes div constant 0x01
+sig data 0x01 0 0 ... 77 88 99
+generate ocpsk diversified key
+generate K0 = encrypt (secret_key, buffer of 0's (how many?  1 key worth?)
+K0 should be 0x67...FD
+generate K1 = ...msb...
+K1 should be CE...FA
+
+#endif
 /*
   sigutil - AN10957 CMAC signature Utility
 
@@ -75,6 +86,8 @@ int
   ctx->tool_identifier = OB_TOOL_SIGUTIL;
   fprintf(LOG, "sigutil %s\n", OPENBADGER_VERSION);
   memset(&PACS_data, 0, sizeof(PACS_data));
+fprintf(LOG, "DEBUG: pre-loading PACS_data\n");
+memcpy(&PACS_data, PACS_data_object_default, sizeof(PACS_data));
 
   found_something = 0;
   done = 0;
@@ -116,13 +129,15 @@ int
 
     case OB_HELP:
       found_something = 1;
-      // fall through to default on purpose
-    default:
       fprintf(LOG, "--help - display this help text.\n");
       fprintf(LOG, "--verbosity (min 1 max 9)\n");
       fprintf(LOG, "--details <json file> - details for this calculation\n");
       fprintf(LOG, "--settings <json file> - configured settings for the tool\n");
       fprintf(LOG, "--selftest - use the values in AN10957\n");
+      status = ST_OK;
+      break;
+
+    default:
       status = STOB_NO_ARGUMENTS;
       break;
     };
@@ -142,9 +157,18 @@ int main (int argc, char *argv [])
 
 
   status = initialize_sigutil(&ctx, argc, argv);
+  if (status EQUALS STOB_NO_ARGUMENTS)
+  {
+    fprintf(LOG, "Signature Utility is in startup.\n");
+    status = ST_OK;
+  };
   fprintf(LOG, "PACS Data Object is %lu. bytes\n", sizeof(PACS_data));
   display_PACS_data_object(ctx, &PACS_data);
+  fprintf(LOG, "Secret Key: %s\n", string_hex_buffer(ctx, ctx->secret_key, OB_KEY_SIZE_10957));
   fprintf(LOG, "       UID: %s\n", string_hex_buffer(ctx, ctx->uid, ctx->uid_size));
+  status = diversify_AN10957(ctx);
+  if (status != ST_OK)
+    fprintf(LOG, "Error %d. in diversification\n", status);
   return(status);
 
 } /* main for sigutil */
@@ -223,8 +247,6 @@ int
       memcpy(ctx->uid, uid_default, uid_default_size);
     };
 
-    fprintf(LOG, "Secret Key: %s\n", string_hex_buffer(ctx, ctx->secret_key, OB_KEY_SIZE_10957));
-    fprintf(LOG, "       UID: %s\n", string_hex_buffer(ctx, ctx->uid, ctx->uid_size));
 
     fprintf(LOG, "---> Step 1 Generate K0 <---\n");
     memset(K0_plaintext, 0, sizeof(K0_plaintext));

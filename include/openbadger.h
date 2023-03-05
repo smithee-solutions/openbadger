@@ -41,6 +41,7 @@ typedef struct
 {
   int verbosity;
   unsigned char secret_key [OB_KEY_SIZE_10957];
+  unsigned char diversified_key [OB_KEY_SIZE_10957];
   unsigned char iv [OB_KEY_SIZE_10957];
   unsigned char uid [OB_UID_SIZE];
   int uid_size;

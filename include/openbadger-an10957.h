@@ -25,6 +25,5 @@ typedef struct __attribute__((packed)) ob_pacs_data_object
   unsigned char reissue_code;
   unsigned char PIN_code [4];
   unsigned char customer_specific_data [20];
-  unsigned char cmac_signature [8];
 } OB_PACS_DATA_OBJECT;
  

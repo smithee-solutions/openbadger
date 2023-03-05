@@ -133,13 +133,38 @@ int main (int argc, char *argv [])
 
 
   status = initialize_sigutil(&ctx, argc, argv);
-  fprintf(LOG, "PACS Data Object is %lu. bytes\n", sizeof(PACS_data));
+  if (ctx->verbosity > 3)
+    fprintf(LOG, "PACS Data Object is %lu. bytes\n", sizeof(PACS_data));
   display_PACS_data_object(ctx, &PACS_data);
-  fprintf(LOG, "Secret Key: %s\n", string_hex_buffer(ctx, ctx->secret_key, OB_KEY_SIZE_10957));
-  fprintf(LOG, "       UID: %s\n", string_hex_buffer(ctx, ctx->uid, ctx->uid_size));
+  fprintf(LOG, 
+"            UID: %s\n", string_hex_buffer(ctx, ctx->uid, ctx->uid_size));
+  fprintf(LOG, 
+"     Secret Key: %s\n", string_hex_buffer(ctx, ctx->secret_key, OB_KEY_SIZE_10957));
   status = diversify_AN10957(ctx);
   if (status != ST_OK)
     fprintf(LOG, "Error %d. in diversification\n", status);
+
+  memset(ctx->iv, 0, sizeof(ctx->iv));
+  memcpy(ctx->iv, ctx->uid, ctx->uid_size);
+  ctx->iv [ctx->uid_size] = 0x80; // for padding of IV (apparently.)
+  {
+    int length;
+    unsigned char tmp1 [1000];
+    unsigned char tmp2 [1000];
+    memset(tmp1, 0, sizeof(tmp1));
+    memcpy(tmp1, (unsigned char *)&PACS_data, sizeof(PACS_data));
+    //tmp1 [sizeof(PACS_data)] = 0x80; // for padding
+int t1,t2,t3,t4;
+t1 = sizeof(PACS_data);
+t2 = sizeof(PACS_data) + OB_KEY_SIZE_10957 - 1;
+t3 = t2 / OB_KEY_SIZE_10957;
+t4 = t3 * OB_KEY_SIZE_10957;
+fprintf(stderr, "t1 %d t2 %d t3 %d t4 %d\n", t1, t2, t3, t4);
+    length = (((sizeof(PACS_data) + OB_KEY_SIZE_10957 - 1) / OB_KEY_SIZE_10957)) * OB_KEY_SIZE_10957;
+fprintf(LOG, "(%d.)%s", length, buffer_dump_string(ctx, tmp1, length, "Signature data: "));
+  status = aes_encrypt(ctx, tmp1, tmp2, ctx->diversified_key, &length);
+  fprintf(LOG, "%s", buffer_dump_string(ctx, tmp2, length, "Sig ciphertext: "));
+  };
   return(status);
 
 } /* main for sigutil */

@@ -2,7 +2,8 @@
 
 open source credential management components
 
-Includes 'divutil' - a program to practice calculating diversified key values for AN10957
+Includes various utilities that calculate diversified key values
+and CMAC signatures.
 
 See doc directory for usage and build instructions
 

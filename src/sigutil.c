@@ -88,11 +88,8 @@ memcpy(&PACS_data, PACS_data_object_default, sizeof(PACS_data));
       break;
 
     case OB_SELFTEST:
-      fprintf(LOG, "Self-test selected, loading parameters.\n");
-      memcpy(ctx->secret_key, &secret_key_default, OB_KEY_SIZE_10957);
-      memcpy(&PACS_data, PACS_data_object_default, sizeof(PACS_data));
-      status = ST_OK;
-      selftest = 1;
+      fprintf(LOG, "Self-test not implemented.\n");
+      status = -1;
       break;
 
     case OB_SETTINGS:
@@ -113,12 +110,11 @@ memcpy(&PACS_data, PACS_data_object_default, sizeof(PACS_data));
       fprintf(LOG, "--verbosity (min 1 max 9)\n");
       fprintf(LOG, "--details <json file> - details for this calculation\n");
       fprintf(LOG, "--settings <json file> - configured settings for the tool\n");
-      fprintf(LOG, "--selftest - use the values in AN10957\n");
       status = ST_OK;
       break;
     };
     ctx->action = OB_NOOP; // reset from whatever getopt_long set it to
-    if (status_opt EQUALS -1)
+    if ((status_opt EQUALS -1) || (status != ST_OK))
       done = 1;
   };
   return(status);

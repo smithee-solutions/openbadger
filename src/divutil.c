@@ -38,50 +38,35 @@ extern unsigned char xor_K2 [];
 
 int
   ob_init
-    (OB_CONTEXT *ctx)
+    (OB_CONTEXT **new_ctx)
 
 { /* ob_init */
 
-  int i;
-  json_t *settings;
-  char settings_filename [1024];
+  OB_CONTEXT *ctx;
   int status;
-  json_error_t status_json;
-  json_t *value;
 
 
-  status = ST_OK;
+  status = openbadger_initialize(new_ctx, OB_SYSTEM_SETTINGS_FILE);
+  ctx = *new_ctx;
+  if (status EQUALS STOB_SETTINGS_ERROR)
+  {
+    if (ctx->verbosity > 3)
+      fprintf(LOG, "Error reading settings from %s\n", OB_SYSTEM_SETTINGS_FILE);
+    status = ST_OK;
+  };
+  if (status EQUALS ST_OK)
+  {
+    status = openbadger_initialize(NULL, OB_LOCAL_SETTINGS_FILE);
+    if (status EQUALS STOB_SETTINGS_ERROR)
+    {
+      if (ctx->verbosity > 3)
+        fprintf(LOG, "Error reading settings from %s\n", OB_LOCAL_SETTINGS_FILE);
+      status = ST_OK;
+    };
+  };
 
   ctx->tool_identifier = OB_TOOL_DIVUTIL;
-  ctx->verbosity = 3;
-  ctx->uid_size = OB_UID_SIZE;
-  strcpy(settings_filename, OB_SYSTEM_SETTINGS_FILE);
   
-  settings = json_load_file(settings_filename, 0, &status_json);
-  if (settings != NULL)
-  {
-    value = json_object_get(settings, "verbosity");
-    if (json_is_string(value))
-    {
-      sscanf(json_string_value(value), "%d", &i);
-      ctx->verbosity = i;
-    };
-
-    if (ctx->verbosity > 3)
-      fprintf(LOG, "divutil: settings file %s loaded.\n", OB_SYSTEM_SETTINGS_FILE);
-
-    value = json_object_get(settings, "UID");
-    if (json_is_string(value))
-    {
-      int uid_length;
-
-      memcpy(ctx->uid, string_buffer_hex(ctx, json_string_value(value), &uid_length), sizeof(ctx->uid));
-    };
-  };
-  if (ctx->verbosity > 2)
-  {
-    fprintf(LOG, "Settings file %s\n", settings_filename);
-  };
   return(status);
 
 } /* ob_init */
@@ -104,7 +89,6 @@ int
   OB_CONTEXT divutil_context;
   int done;
   int encrypted_length;
-  int found_something;
   int i;
   unsigned char K0 [OB_KEY_SIZE_10957];
   unsigned char K0_plaintext [OB_KEY_SIZE_10957];
@@ -127,20 +111,14 @@ int
     };
 
 
-  ctx = &divutil_context;
-  memset(ctx, 0, sizeof(*ctx));
   status = ST_OK;
-  found_something = 0;
   fprintf(LOG, "divutil %s\n", OPENBADGER_VERSION);
-  status = ob_init(ctx);
+  status = ob_init(&ctx);
 
   done = 0;
   while (!done)
   {
     status_opt = getopt_long (argc, argv, optstring, longopts, &longindex);
-    if (!found_something)
-      if (status_opt EQUALS -1)
-        ctx->action = OB_HELP;
     switch (ctx->action)
     {
     case OB_NOOP:
@@ -152,30 +130,27 @@ int
       memcpy(ctx->secret_key, &secret_key_default, OB_KEY_SIZE_10957);
       status = ST_OK;
       selftest = 1;
-      found_something = 1;
       break;
 
     case OB_SETTINGS:
-      status = ST_OK;
-      found_something = 1;
+      // user specified their own settings file.  pile it on top of the others
+
+      status = openbadger_initialize(NULL, optarg);
+      if (status != ST_OK)
+        fprintf(LOG, "Error reading specified settings file (%s)\n", optarg);
       break;
 
     case OB_VERBOSITY:
-      found_something = 1;
       sscanf(optarg, "%d", &i);
       ctx->verbosity = i;
       break;
 
     case OB_HELP:
-      found_something = 1;
-      // fall through to default on purpose
-    default:
       fprintf(LOG, "--help - display this help text.\n");
       fprintf(LOG, "--verbosity (min 1 max 9)\n");
       fprintf(LOG, "--details <json file> - details for this calculation\n");
       fprintf(LOG, "--settings <json file> - configured settings for the tool\n");
       fprintf(LOG, "--selftest - use the values in AN10957\n");
-      status = STOB_NO_ARGUMENTS;
       break;
     };
     ctx->action = OB_NOOP; // reset from whatever getopt_long set it to

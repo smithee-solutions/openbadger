@@ -1,5 +1,5 @@
 /*
-  openbadger-version - version string
+  ob-pcsc - PC/SC items for openbadger
 
   (C)Copyright 2023 Smithee Solutions LLC
 
@@ -16,5 +16,15 @@
   limitations under the License.
 */
 
-#define OPENBADGER_VERSION "0.10"
+// PC/SC specific reader context
+typedef struct ob_rdrctx
+{
+  DWORD last_pcsc_status;
+  int reader_index;
+  char reader_name [OB_STRINGMAX];
+  SCARDHANDLE pcsc;
+  SCARD_IO_REQUEST pioSendPci;
+} OB_RDRCTX;
+
+int ob_init_smartcard(OB_CONTEXT *ctx);
 

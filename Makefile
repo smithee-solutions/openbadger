@@ -18,10 +18,13 @@
 
 all:
 	(cd src; make)
+	(cd test-800-73; make);
 
 clean:
 	(cd src; make clean)
+	(cd test-800-73; make clean);
 
 package:
 	echo NO PACKAGE SET-UP AT THIS TIME
+	(cd test-800-73; make package);
 

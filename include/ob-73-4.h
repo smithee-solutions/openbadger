@@ -1,5 +1,5 @@
 /*
-  openbadger-version - version string
+  openbadger - NIST SP800-73-4 definitions
 
   (C)Copyright 2023 Smithee Solutions LLC
 
@@ -16,5 +16,20 @@
   limitations under the License.
 */
 
-#define OPENBADGER_VERSION "0.10"
+// NIST SP800-73-4
+
+#define OP_7816_ALGO_REF_RSA2048            (0x07)
+
+#define OP_7816_KEY_CARD_AUTHENTICATION    (0x9E)
+#define OP_7816_KEY_MANAGEMENT             (0x9D)
+#define OP_7816_KEY_PIV_AUTHENTICATION_KEY (0x9A)
+#define OP_7816_KEY_SIGNATURE              (0x9C)
+
+// from 800-73-4 Part 2 Table 7
+#define OP_7816_DYNAUTH_WITNESS            (0x80)
+#define OP_7816_DYNAUTH_CHALLENGE          (0x81)
+#define OP_7816_DYNAUTH_RESPONSE           (0x82)
+
+int ob_challenge_response(OB_CONTEXT *ctx);
+char *ob_pcsc_error_string(DWORD status_pcsc);
 

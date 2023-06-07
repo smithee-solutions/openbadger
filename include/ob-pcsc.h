@@ -19,11 +19,12 @@
 // PC/SC specific reader context
 typedef struct ob_rdrctx
 {
+  SCARDCONTEXT hContext;
   DWORD last_pcsc_status;
-  int reader_index;
-  char reader_name [OB_STRINGMAX];
   SCARDHANDLE pcsc;
   SCARD_IO_REQUEST pioSendPci;
+  int reader_index;
+  char reader_name [OB_STRINGMAX];
 } OB_RDRCTX;
 
 int ob_init_smartcard(OB_CONTEXT *ctx);

@@ -30,10 +30,10 @@
 //#include <op-pkoc.h>
 //#include <openpkoc.h>
 #include <ob-7816.h>
-#include <ob-73-4.h>
 #include <openbadger-common.h>
 #include <openbadger-version.h>
 #include <ob-pcsc.h>
+#include <ob-73-4.h>
 
 // this is defined in NIST SP-800-73-4 Part 1 Section 2.2
 
@@ -50,6 +50,8 @@ int main
   OB_CONTEXT *ctx;
   DWORD dwRecvLength;
   BYTE pbRecvBuffer [2*OB_7816_APDU_PAYLOAD_MAX]; // probably actually 1x plus 2
+  OB_RDRCTX pcsc_reader_context;
+  OB_RDRCTX *rdrctx;
   unsigned char smartcard_select_command [OB_7816_BUFFER_MAX];
   int smartcard_select_command_length;
   int status;
@@ -59,6 +61,8 @@ int main
 
   ctx = &test_piv_context;
   memset(ctx, 0, sizeof(*ctx));
+  ctx->rdrctx = &pcsc_reader_context;
+  rdrctx = ctx->rdrctx;
   smartcard_select_command_length = 0;
   ctx->test_case = OB_TEST_PIV;
 ctx->verbosity = 9;
@@ -73,7 +77,7 @@ ctx->verbosity = 9;
   };
   fprintf(stderr, "test-piv-challenge %s\n", OPENBADGER_VERSION);
 
-  status = op_init_smartcard(ctx);
+  status = ob_init_smartcard(ctx);
 
   // test cases: 1: test vectors, 2: PIV, 3: PKOC
 
@@ -96,30 +100,30 @@ ctx->verbosity = 9;
 
   if (ctx->verbosity > 3)
   {
-    op_dump_buffer (ctx, smartcard_select_command, smartcard_select_command_length, 0);
+    ob_dump_buffer (ctx, smartcard_select_command, smartcard_select_command_length, 0);
   };
 
   // send application select to card
 
   dwRecvLength = sizeof(pbRecvBuffer);
-  status_pcsc = SCardTransmit(ctx->pcsc, &ctx->pioSendPci, smartcard_select_command, smartcard_select_command_length, NULL, pbRecvBuffer, &dwRecvLength);
-  ctx->last_pcsc_status = status_pcsc;
+  status_pcsc = SCardTransmit(rdrctx->pcsc, &rdrctx->pioSendPci, smartcard_select_command, smartcard_select_command_length, NULL, pbRecvBuffer, &dwRecvLength);
+  rdrctx->last_pcsc_status = status_pcsc;
   if (SCARD_S_SUCCESS != status_pcsc)
     status = STOB_PCSC_TRANSMIT_1;
   if (status != ST_OK)
   {
     fprintf(stderr, "Select returns: ");
-    op_dump_buffer (ctx, pbRecvBuffer, dwRecvLength, 0);
+    ob_dump_buffer (ctx, pbRecvBuffer, dwRecvLength, 0);
   };
 
   if (status EQUALS ST_OK)
   {
 fprintf(stderr, "DEBUG: challenge/response now...\n");
-    status = op_challenge_response(ctx);
+    status = ob_challenge_response(ctx);
   };
 
   if (status != ST_OK)
-    fprintf(stderr, "return status %d. last PCSC status %lX %s\n", status, ctx->last_pcsc_status, op_pcsc_error_string(ctx->last_pcsc_status));
+    fprintf(stderr, "return status %d. last PCSC status %lX %s\n", status, rdrctx->last_pcsc_status, ob_pcsc_error_string(rdrctx->last_pcsc_status));
   return(status);
 
 } /* main for test-piv-challenge */

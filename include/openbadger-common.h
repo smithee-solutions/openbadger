@@ -24,6 +24,9 @@
 #define OB_TEST_VECTORS (0)
 #define OB_TEST_PIV     (1)
 
+#define OB_DUMP_INCLUDE (2)
+// 0=stderr 1=?
+
 #define ST_OK                  (   0)
 #define STOB_SCARD_ERROR       (   1)
 #define STOB_SCARD_CONNECT     (   2)
@@ -41,31 +44,32 @@ typedef struct ob_context
   // general bookkeeping
   int verbosity;
   int test_case; // in case there are test vectors, multiple flavors, etc.
+  FILE *current_file;
 
   // for PCSC reader control
   int reader_index;
   char reader_name [OB_STRINGMAX];
   void *rdrctx;
-} OB_CONTEXT;
-
-void ob_dump_buffer(OB_CONTEXT *ctx, BYTE *bytes, int length, int dest);
-
-
-#if 0
-  FILE *current_file;
-
-  // PCSC context
-
-  DWORD last_pcsc_status;
-  SCARDCONTEXT hContext;
-  SCARDHANDLE pcsc;
-  SCARD_IO_REQUEST pioSendPci;
 
   // general authenticate context
 
   unsigned char key_reference;
   int key_size;
   unsigned char challenge_type;
+} OB_CONTEXT;
+
+void ob_add_tag_length(unsigned char *buffer, int length, int *new_buffer_length);
+int ob_command_response(OB_CONTEXT *ctx, unsigned char *x7816_buffer, int x7816_lth, char *prefix_string, char *suffix_string, unsigned char *r7816_buffer, LPDWORD r7816_lth);
+void ob_dump_buffer(OB_CONTEXT *ctx, BYTE *bytes, int length, int dest);
+
+
+#if 0
+
+  // PCSC context
+
+  DWORD last_pcsc_status;
+  SCARDHANDLE pcsc;
+  SCARD_IO_REQUEST pioSendPci;
 
   // PKOC context
 
@@ -81,18 +85,14 @@ void ob_dump_buffer(OB_CONTEXT *ctx, BYTE *bytes, int length, int dest);
 
 #define OP_TEST_PKOC    (2)
 
-#define OP_DUMP_INCLUDE (2)
-// 0=stderr 1=?
 
 
 
-void add_tag_length(unsigned char *buffer, int length, int *new_buffer_length);
 int op_build_7816_message
   (OP_CONTEXT *ctx, unsigned char msg_cla, unsigned char msg_ins, unsigned char msg_p1, unsigned char msg_p2,
   unsigned char msg_lc, unsigned char msg_le, unsigned char *payload, int payload_length, int flags,
   unsigned char *message_7816, int *message_7816_length);
 int op_challenge_response(OP_CONTEXT *ctx);
-int op_command_response(OP_CONTEXT *ctx, unsigned char *x7816_buffer, int x7816_lth, char *prefix_string, char *suffix_string, unsigned char *r7816_buffer, LPDWORD r7816_lth);
 int op_init_smartcard(OP_CONTEXT *ctx);
 char *op_pcsc_error_string(DWORD status_pcsc);
 int op_validate_select_response(OP_CONTEXT *ctx, unsigned char *response, int response_length);

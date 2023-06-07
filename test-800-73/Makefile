@@ -15,18 +15,19 @@ all:	${PROGS}
 clean:
 	rm -f core *.o ${PROGS}
 
-test-piv-challenge:	Makefile test-piv-challenge.o op-genauth.o op-utils.o
-	${LINK} -o test-piv-challenge test-piv-challenge.o op-genauth.o op-utils.o ${LDFLAGS}
+package:
+	echo no package set-up available
 
-op-genauth.o:	op-genauth.c \
-	../include/op-7816.h ../include/openpkoc.h \
-	../include/op-testvectors.h ../include/openpkoc-version.h
-	${CC} ${CFLAGS} op-genauth.c
+test-piv-challenge:	Makefile test-piv-challenge.o ob-genauth.o ob-utils.o
+	${LINK} -o test-piv-challenge test-piv-challenge.o ob-genauth.o ob-utils.o ${LDFLAGS}
 
-op-utils.o:	op-utils.c \
-	../include/op-7816.h ../include/openpkoc.h \
-	../include/op-testvectors.h ../include/openpkoc-version.h
-	${CC} ${CFLAGS} op-utils.c
+ob-genauth.o:	ob-genauth.c \
+	../include/ob-73-4.h ../include/ob-7816.h ../include/ob-pcsc.h ../include/openbadger-common.h
+	${CC} ${CFLAGS} ob-genauth.c
+
+ob-utils.o:	ob-utils.c \
+	../include/ob-73-4.h ../include/ob-7816.h ../include/ob-pcsc.h ../include/openbadger-common.h
+	${CC} ${CFLAGS} ob-utils.c
 
 test-piv-challenge.o:	test-piv-challenge.c \
 	../include/ob-73-4.h ../include/ob-7816.h ../include/ob-pcsc.h ../include/openbadger-common.h ../include/openbadger-version.h

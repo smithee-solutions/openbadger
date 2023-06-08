@@ -24,7 +24,7 @@ typedef struct ob_rdrctx
   SCARDHANDLE pcsc;
   SCARD_IO_REQUEST pioSendPci;
   int reader_index;
-  char reader_name [OB_STRINGMAX];
+  char reader_name [OB_STRING_MAX];
 } OB_RDRCTX;
 
 int ob_init_smartcard(OB_CONTEXT *ctx);

@@ -16,16 +16,35 @@
   limitations under the License.
 */
 
-#define EQUALS ==
-#define OB_STRINGMAX (1024)
-#define OB_7816_BUFFER_MAX     (1000)  // our buffer not one in the spec
+#define LOG stdout
 
-// test cases exercised
+#define EQUALS ==
+#define OB_STRING_MAX      (1024)
+#define OB_AES128_KEY_SIZE (128/8)
+#define OB_UID_SIZE        (56/8)
+#define OB_7816_BUFFER_MAX (1000)  // our buffer not one in the spec
+
+// test cases exercised (in 800-73 testing)
 #define OB_TEST_VECTORS (0)
 #define OB_TEST_PIV     (1)
 
+// tool being used (in AN-10957 testing)
+
+#define OB_TOOL_DIVUTIL (0x0001)
+#define OB_TOOL_SIGUTIL (0x0002)
+
+#define OB_NOOP      (0)
+#define OB_HELP      (1)
+#define OB_VERBOSITY (2)
+// rfu (3)
+#define OB_SETTINGS  (4)
+#define OB_SELFTEST  (5)
+
 #define OB_DUMP_INCLUDE (2)
 // 0=stderr 1=?
+
+#define OB_SYSTEM_SETTINGS_FILE "/opt/tester/etc/openbadger-settings.json"
+#define OB_LOCAL_SETTINGS_FILE "openbadger-settings.json"
 
 #define ST_OK                  (   0)
 #define STOB_SCARD_ERROR       (   1)
@@ -38,17 +57,22 @@
 #define STOB_SELRSP_TAG        (   8)
 #define STOB_PKOC_AUTH         (   9)
 #define STOB_SCARD_ESTABLISH   (  10)
+#define STOB_NO_ARGUMENTS      (  11)
+#define STOB_NOT_IMPLEMENTED   (  12)
+#define STOB_SETTINGS_ERROR    (  13)
 
 typedef struct ob_context
 {
   // general bookkeeping
   int verbosity;
   int test_case; // in case there are test vectors, multiple flavors, etc.
+  int action; // action as specified by command line swtch
+  unsigned long int tool_identifier;  // which "tool" is this.
   FILE *current_file;
 
   // for PCSC reader control
   int reader_index;
-  char reader_name [OB_STRINGMAX];
+  char reader_name [OB_STRING_MAX];
   void *rdrctx;
 
   // general authenticate context
@@ -56,21 +80,21 @@ typedef struct ob_context
   unsigned char key_reference;
   int key_size;
   unsigned char challenge_type;
+
+  // general DESFire-ish parameters
+  unsigned char uid [OB_UID_SIZE];
+  int uid_size;
 } OB_CONTEXT;
 
 void ob_add_tag_length(unsigned char *buffer, int length, int *new_buffer_length);
 int ob_command_response(OB_CONTEXT *ctx, unsigned char *x7816_buffer, int x7816_lth, char *prefix_string, char *suffix_string, unsigned char *r7816_buffer, LPDWORD r7816_lth);
+void ob_display_PACS_data_object(OB_CONTEXT *ctx, unsigned char *credential_contents);
+int ob_initialize(OB_CONTEXT **initiaized_context, char *settings_filename);
 void ob_dump_buffer(OB_CONTEXT *ctx, BYTE *bytes, int length, int dest);
+char *string_hex_buffer(OB_CONTEXT *ctx, unsigned char *buf, int buf_lth);
 
 
 #if 0
-
-  // PCSC context
-
-  DWORD last_pcsc_status;
-  SCARDHANDLE pcsc;
-  SCARD_IO_REQUEST pioSendPci;
-
   // PKOC context
 
   unsigned char protocol_version [OP_STRINGMAX];

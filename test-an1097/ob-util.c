@@ -1,5 +1,5 @@
 /*
-  ob-prims - primitives to support openbadger
+  ob-util - utility functions to support openbadger
 
   (C)Copyright 2023 Smithee Solutions LLC
 
@@ -179,16 +179,33 @@ char
 } /* buffer_dump_string */
 
 
+/*
+  display_PACS_data_object - displays "card contents"
+
+  is aware of different formats.
+
+  first arg is context
+  second arg is pointer to payload
+*/
 void
   display_PACS_data_object
   (OB_CONTEXT *ctx,
-  OB_PACS_DATA_OBJECT *PACS_data_object)
+  unsigned char *credential_contents)
 
 { /* display_PACS_data_object */
 
+  OB_PACS_DATA_OBJECT *PACS_data_object;
   int i;
 
 
+  PACS_data_object = credential_contents;
+  switch(ctx->pacs_data_format)
+  {
+  default:
+    if (ctx->verbosity > 3)
+      fprintf(stderr, "Unknown credential format\n");
+    break;
+  case OB_PACS_FORMAT_AN10957:
   fprintf(LOG, "PACS Data Object\n");
   fprintf(LOG, "----------------\n");
   fprintf(LOG, "Version %02X.%02X\n", PACS_data_object->version_major, PACS_data_object->version_minor);
@@ -200,6 +217,8 @@ void
   for (i=0; i<sizeof(PACS_data_object->customer_specific_data); i++)
     fprintf(LOG, "%02X", PACS_data_object->customer_specific_data [i]);
   fprintf(LOG, "\n");
+    break;
+  };
 } /* display_PACS_data_object */
 
 

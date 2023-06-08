@@ -1,5 +1,5 @@
 /*
-  sigutil - AN10957 CMAC signature Utility
+  sig-test-AN10957 - AN10957 CMAC signature Utility
 
   (C)Copyright 2023 Smithee Solutions LLC
 
@@ -21,15 +21,21 @@
 #include <string.h>
 #include <getopt.h>
 
+
+#include <PCSC/wintypes.h>
+#include <PCSC/pcsclite.h>
+#include <PCSC/winscard.h>
+
+
 #include <jansson.h>
 #include <aes.h>
 
 
-#include <openbadger-an10957.h>
-#include <openbadger.h>
+#include <ob-pacs.h>
+#include <openbadger-common.h>
 #include <openbadger-version.h>
 extern unsigned char secret_key_default [];
-OB_PACS_DATA_OBJECT PACS_data;
+OB_PACS_AN10957 PACS_data;
 extern unsigned char PACS_data_object_default [];
 int selftest;
 
@@ -53,7 +59,7 @@ int
 
 
   fprintf(LOG, "sigutil %s\n", OPENBADGER_VERSION);
-  status = openbadger_initialize(new_ctx, OB_SYSTEM_SETTINGS_FILE);
+  status = ob_initialize(new_ctx, OB_SYSTEM_SETTINGS_FILE);
   ctx = *new_ctx;
   if (status EQUALS STOB_SETTINGS_ERROR)
   {
@@ -63,7 +69,7 @@ int
   };
   if (status EQUALS ST_OK)
   {
-    status = openbadger_initialize(NULL, OB_LOCAL_SETTINGS_FILE);
+    status = ob_initialize(NULL, OB_LOCAL_SETTINGS_FILE);
     if (status EQUALS STOB_SETTINGS_ERROR)
     {
       if (ctx->verbosity > 3)
@@ -95,7 +101,7 @@ memcpy(&PACS_data, PACS_data_object_default, sizeof(PACS_data));
     case OB_SETTINGS:
       // user specified their own settings file.  pile it on top of the others
 
-      status = openbadger_initialize(NULL, optarg);
+      status = ob_initialize(NULL, optarg);
       if (status != ST_OK)
         fprintf(LOG, "Error reading specified settings file (%s)\n", optarg);
       break;
@@ -131,11 +137,11 @@ int main (int argc, char *argv [])
   status = initialize_sigutil(&ctx, argc, argv);
   if (ctx->verbosity > 3)
     fprintf(LOG, "PACS Data Object is %lu. bytes\n", sizeof(PACS_data));
-  display_PACS_data_object(ctx, &PACS_data);
+  ob_display_PACS_data_object(ctx, (unsigned char *)&PACS_data);
   fprintf(LOG, 
 "            UID: %s\n", string_hex_buffer(ctx, ctx->uid, ctx->uid_size));
   fprintf(LOG, 
-"     Secret Key: %s\n", string_hex_buffer(ctx, ctx->secret_key, OB_KEY_SIZE_10957));
+"     Secret Key: %s\n", string_hex_buffer(ctx, ctx->secret_key, OB_AES128_KEY_SIZE));
   status = diversify_AN10957(ctx);
   if (status != ST_OK)
     fprintf(LOG, "Error %d. in diversification\n", status);
@@ -152,11 +158,11 @@ int main (int argc, char *argv [])
     //tmp1 [sizeof(PACS_data)] = 0x80; // for padding
 int t1,t2,t3,t4;
 t1 = sizeof(PACS_data);
-t2 = sizeof(PACS_data) + OB_KEY_SIZE_10957 - 1;
-t3 = t2 / OB_KEY_SIZE_10957;
-t4 = t3 * OB_KEY_SIZE_10957;
+t2 = sizeof(PACS_data) + OB_AES128_KEY_SIZE - 1;
+t3 = t2 / OB_AES128_KEY_SIZE;
+t4 = t3 * OB_AES128_KEY_SIZE;
 fprintf(stderr, "t1 %d t2 %d t3 %d t4 %d\n", t1, t2, t3, t4);
-    length = (((sizeof(PACS_data) + OB_KEY_SIZE_10957 - 1) / OB_KEY_SIZE_10957)) * OB_KEY_SIZE_10957;
+    length = (((sizeof(PACS_data) + OB_AES128_KEY_SIZE - 1) / OB_AES128_KEY_SIZE)) * OB_AES128_KEY_SIZE;
 fprintf(LOG, "(%d.)%s", length, buffer_dump_string(ctx, tmp1, length, "Signature data: "));
   status = aes_encrypt(ctx, tmp1, tmp2, ctx->diversified_key, &length);
   fprintf(LOG, "%s", buffer_dump_string(ctx, tmp2, length, "Sig ciphertext: "));

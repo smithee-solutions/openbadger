@@ -20,9 +20,18 @@
 
 #define EQUALS ==
 #define OB_STRING_MAX      (1024)
-#define OB_AES128_KEY_SIZE (128/8)
 #define OB_UID_SIZE        (56/8)
 #define OB_7816_BUFFER_MAX (1000)  // our buffer not one in the spec
+
+// various formats
+
+#define OB_FORMAT_SIA26BIT (0)
+#define OB_FORMAT_PIV      (1)
+#define OB_FORMAT_AN10957  (2)
+#define OB_FORMAT_LEAF     (3)
+#define OB_FORMAT_Pzz1     (4)
+#define OB_FORMAT_Pzz2     (5)
+#define OB_FORMAT_PRIVATE  (255)
 
 // test cases exercised (in 800-73 testing)
 #define OB_TEST_VECTORS (0)
@@ -69,14 +78,16 @@ typedef struct ob_context
   int action; // action as specified by command line swtch
   unsigned long int tool_identifier;  // which "tool" is this.
   FILE *current_file;
+  int pacs_data_format;
 
   // for PCSC reader control
   int reader_index;
   char reader_name [OB_STRING_MAX];
   void *rdrctx;
 
-  // general authenticate context
+  // 7816 and specifically general authenticate context
 
+  int apdu_payload_max_7816;
   unsigned char key_reference;
   int key_size;
   unsigned char challenge_type;
@@ -84,43 +95,24 @@ typedef struct ob_context
   // general DESFire-ish parameters
   unsigned char uid [OB_UID_SIZE];
   int uid_size;
+
+  // crypto keys
+  unsigned char secret_key [OB_AES128_KEY_SIZE];
+  unsigned char iv [OB_AES128_KEY_SIZE];
+
+  void *an10957ctx;
 } OB_CONTEXT;
 
+int aes_encrypt(OB_CONTEXT *ctx, unsigned char *plaintext, unsigned char *ciphertext, unsigned char *key, int *length);
+void array_shift_left(OB_CONTEXT *ctx, unsigned char *from, unsigned char *to);
+void array_xor(OB_CONTEXT *ctx, unsigned char *result, unsigned char *xor_left, unsigned char *xor_right, int length);
 void ob_add_tag_length(unsigned char *buffer, int length, int *new_buffer_length);
-int ob_command_response(OB_CONTEXT *ctx, unsigned char *x7816_buffer, int x7816_lth, char *prefix_string, char *suffix_string, unsigned char *r7816_buffer, LPDWORD r7816_lth);
+int ob_command_response(OB_CONTEXT *ctx, unsigned char *x7816_buffer, int x7816_lth, char *prefix_string, char *suffix_string, unsigned char *r7816_buffer, int *r7816_lth);
 void ob_display_PACS_data_object(OB_CONTEXT *ctx, unsigned char *credential_contents);
+int ob_diversify_AN10957(OB_CONTEXT *ctx);
 int ob_initialize(OB_CONTEXT **initiaized_context, char *settings_filename);
-void ob_dump_buffer(OB_CONTEXT *ctx, BYTE *bytes, int length, int dest);
+char *ob_buffer_dump_string(OB_CONTEXT *ctx, unsigned char *buffer, int buffer_size, char *tag);
+void ob_dump_buffer(OB_CONTEXT *ctx, unsigned char *bytes, int length, int dest);
+unsigned char *string_buffer_hex(OB_CONTEXT *ctx, const char *buf, int *buf_lth);
 char *string_hex_buffer(OB_CONTEXT *ctx, unsigned char *buf, int buf_lth);
-
-
-#if 0
-  // PKOC context
-
-  unsigned char protocol_version [OP_STRINGMAX];
-  int protocol_version_length;
-  unsigned char transaction_identifier [OP_PKOC_TRANSACTID_LENGTH];
-  unsigned char site_key_identifier [OP_PKOC_SITE_KEY_IDENTIFIER_LENGTH];
-  unsigned char reader_key_identifier [OP_PKOC_READER_KEY_IDENTIFIER_LENGTH];
-  unsigned char card_arbval [2]; // arbitrary value
-  unsigned char ec_public_key [65];
-  unsigned char pkoc_signature [64];
-} OP_CONTEXT;
-
-#define OP_TEST_PKOC    (2)
-
-
-
-
-int op_build_7816_message
-  (OP_CONTEXT *ctx, unsigned char msg_cla, unsigned char msg_ins, unsigned char msg_p1, unsigned char msg_p2,
-  unsigned char msg_lc, unsigned char msg_le, unsigned char *payload, int payload_length, int flags,
-  unsigned char *message_7816, int *message_7816_length);
-int op_challenge_response(OP_CONTEXT *ctx);
-int op_init_smartcard(OP_CONTEXT *ctx);
-char *op_pcsc_error_string(DWORD status_pcsc);
-int op_validate_select_response(OP_CONTEXT *ctx, unsigned char *response, int response_length);
-
-
-#endif
 

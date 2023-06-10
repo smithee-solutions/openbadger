@@ -17,11 +17,9 @@
 # make file for openbadger
 
 all:
-	(cd src; make)
 	(cd test-800-73; make);
 
 clean:
-	(cd src; make clean)
 	(cd test-800-73; make clean);
 
 package:

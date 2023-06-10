@@ -19,8 +19,11 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <openbadger-an10957.h>
-#include <openbadger.h>
+
+#include <ob-crypto.h>
+#include <openbadger-common.h>
+#include <ob-pacs.h>
+#include <ob-an10957.h>
 
 
 void
@@ -37,7 +40,7 @@ void
   unsigned int next_carry;
 
 
-  buffer_size = OB_KEY_SIZE_10957;
+  buffer_size = OB_AES128_KEY_SIZE;
   if (ctx->verbosity > 9)
   {
     fprintf(stderr, "DEBUG: shift (size=%d) input:\n", buffer_size);
@@ -87,10 +90,10 @@ void
 
 
   if (ctx->verbosity > 3)
-    fprintf(LOG, "%s", buffer_dump_string(ctx, xor_left, buffer_size,
+    fprintf(LOG, "%s", ob_buffer_dump_string(ctx, xor_left, buffer_size,
 " XOR (Left):"));
   if (ctx->verbosity > 3)
-    fprintf(LOG, "%s", buffer_dump_string(ctx, xor_right, buffer_size,
+    fprintf(LOG, "%s", ob_buffer_dump_string(ctx, xor_right, buffer_size,
 "XOR (Right):"));
   for (i=0; i<buffer_size; i++)
   {
@@ -106,7 +109,7 @@ void
     fprintf(stderr, "\n");
   };
   if (ctx->verbosity > 3)
-    fprintf(LOG, "%s", buffer_dump_string(ctx, result, buffer_size, "XOR Results: "));
+    fprintf(LOG, "%s", ob_buffer_dump_string(ctx, result, buffer_size, "XOR Results: "));
 
 } /* array_xor */
 
@@ -153,13 +156,13 @@ char
 
 
 char
-  *buffer_dump_string
+  *ob_buffer_dump_string
     (OB_CONTEXT *ctx,
     unsigned char *buffer,
     int buffer_size,
     char *tag)
 
-{ /* buffer_dump_string */
+{ /* ob_buffer_dump_string */
 
   int i;
   static char string_buffer [8*OB_STRING_MAX];
@@ -176,7 +179,7 @@ char
 
   return(string_buffer);
 
-} /* buffer_dump_string */
+} /* ob_buffer_dump_string */
 
 
 /*
@@ -188,24 +191,24 @@ char
   second arg is pointer to payload
 */
 void
-  display_PACS_data_object
+  ob_display_PACS_data_object
   (OB_CONTEXT *ctx,
   unsigned char *credential_contents)
 
-{ /* display_PACS_data_object */
+{ /* ob_display_PACS_data_object */
 
-  OB_PACS_DATA_OBJECT *PACS_data_object;
+  OB_PACS_AN10957 *PACS_data_object;
   int i;
 
 
-  PACS_data_object = credential_contents;
+  PACS_data_object = (OB_PACS_AN10957 *)credential_contents;
   switch(ctx->pacs_data_format)
   {
   default:
     if (ctx->verbosity > 3)
       fprintf(stderr, "Unknown credential format\n");
     break;
-  case OB_PACS_FORMAT_AN10957:
+  case OB_FORMAT_AN10957:
   fprintf(LOG, "PACS Data Object\n");
   fprintf(LOG, "----------------\n");
   fprintf(LOG, "Version %02X.%02X\n", PACS_data_object->version_major, PACS_data_object->version_minor);
@@ -219,7 +222,7 @@ void
   fprintf(LOG, "\n");
     break;
   };
-} /* display_PACS_data_object */
+} /* ob_display_PACS_data_object */
 
 
 unsigned char

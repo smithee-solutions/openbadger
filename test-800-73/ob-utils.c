@@ -27,6 +27,7 @@
 #include <PCSC/winscard.h>
 
 
+#include <ob-crypto.h>
 #include <ob-7816.h>
 #include <openbadger-common.h>
 #include <openbadger-version.h>

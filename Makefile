@@ -18,11 +18,14 @@
 
 all:
 	(cd test-800-73; make);
+	(cd test-an10957; make);
 
 clean:
 	(cd test-800-73; make clean);
+	(cd test-an10957; make clean);
+	(cd package; make clean)
+	rm -rf opt *deb
 
-package:
-	echo NO PACKAGE SET-UP AT THIS TIME
-	(cd test-800-73; make package);
+package:	all
+	(cd package; make package)
 

@@ -25,8 +25,9 @@
 #include <aes.h>
 
 
-#include <openbadger-an10957.h>
-#include <openbadger.h>
+#include <ob-crypto.h>
+#include <openbadger-common.h>
+#include <ob-an10957.h>
 
 
 int
@@ -43,15 +44,15 @@ int
 
 
   if (ctx->verbosity > 3)
-    fprintf(LOG, "%s", buffer_dump_string(ctx, plaintext, *length, 
+    fprintf(LOG, "%s", ob_buffer_dump_string(ctx, plaintext, *length, 
 "   encrypt:   plaintext input: "));
   memcpy(ciphertext, plaintext, *length);
-fprintf(LOG, "%s", buffer_dump_string(ctx, ctx->iv, 128/8, "iv: "));
-fprintf(LOG, "%s", buffer_dump_string(ctx, key, 128/8, "key: "));
+fprintf(LOG, "%s", ob_buffer_dump_string(ctx, ctx->iv, 128/8, "iv: "));
+fprintf(LOG, "%s", ob_buffer_dump_string(ctx, key, 128/8, "key: "));
   AES_init_ctx_iv(&crypto_context, key, ctx->iv);
   AES_CBC_encrypt_buffer(&crypto_context, ciphertext, *length);
   if (ctx->verbosity > 3)
-    fprintf(LOG, "%s", buffer_dump_string(ctx, ciphertext, *length, 
+    fprintf(LOG, "%s", ob_buffer_dump_string(ctx, ciphertext, *length, 
 "   encrypt: ciphertext output: "));
   return(ST_OK);
 

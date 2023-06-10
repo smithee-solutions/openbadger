@@ -18,15 +18,15 @@
 */
 
 
-//#include <stdio.h>
 #include <string.h>
 #include <getopt.h>
 
 #include <jansson.h>
 
 
-#include <openbadger-an10957.h>
-#include <openbadger.h>
+#include <ob-crypto.h>
+#include <openbadger-common.h>
+#include <ob-an10957.h>
 OB_CONTEXT openbadger_context;
 struct option
   longopts [] = {
@@ -39,7 +39,7 @@ struct option
 
 
 int
-  openbadger_initialize
+  ob_initialize
     (OB_CONTEXT **initialized_context,
     char *settings_filename)
 

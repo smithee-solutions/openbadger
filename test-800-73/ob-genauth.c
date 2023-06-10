@@ -26,6 +26,7 @@
 #include <PCSC/winscard.h>
 
 
+#include <ob-crypto.h>
 #include <ob-7816.h>
 #include <openbadger-common.h>
 #include <openbadger-version.h>
@@ -61,11 +62,12 @@ int ob_build_7816_message
   };
 
   // clean out buffer
-  memset (message_7816, 0, 6+OB_7816_APDU_PAYLOAD_MAX); // 6 for cla ins p1 p2 Lc Le
+  // +6 for cla ins p1 p2 Lc Le
+  memset (message_7816, 0, 6+ctx->apdu_payload_max_7816);
 
   // make sure it will fit
 
-  if (payload_length > OB_7816_APDU_PAYLOAD_MAX)
+  if (payload_length > ctx->apdu_payload_max_7816)
     status = -3;
 
   if (status == 0)
@@ -111,7 +113,7 @@ int ob_challenge_response
   unsigned char msg_p2;
   int part1_length;
   unsigned char response_7816 [2*OB_7816_APDU_PAYLOAD_MAX];
-  DWORD response_7816_lth;
+  int response_7816_lth; // not DWORD
   int status;
 
 
@@ -173,7 +175,7 @@ int ob_challenge_response
 
     // set up the first 7816 command
 
-    if (dyn_auth_template_length > OB_7816_APDU_PAYLOAD_MAX)
+    if (dyn_auth_template_length > ctx->apdu_payload_max_7816)
       msg_cla = 0x10;
     else
       msg_cla = 0;
@@ -182,8 +184,8 @@ int ob_challenge_response
     msg_p2 = ctx->key_reference;
 
     part1_length = dyn_auth_template_length;
-    if (part1_length > OB_7816_APDU_PAYLOAD_MAX)
-      part1_length = OB_7816_APDU_PAYLOAD_MAX;
+    if (part1_length > ctx->apdu_payload_max_7816)
+      part1_length = ctx->apdu_payload_max_7816;
     msg_lc = part1_length;
     msg_le = 0;
     break;
@@ -207,7 +209,7 @@ fprintf(stderr, "... payload lth 0x%X msg_7816_lth %X\n",
   if (status EQUALS ST_OK)
   {
     response_7816_lth = sizeof (response_7816);
-fprintf(stderr, "7816 cmd %X rsp %lX\n", msg_7816_lth, response_7816_lth);
+fprintf(stderr, "7816 cmd %X rsp %X\n", msg_7816_lth, response_7816_lth);
     status = ob_command_response (ctx, msg_7816, msg_7816_lth, "First GenAuth PDU Request:", "First GenAuth PDU Response:", response_7816, &response_7816_lth);
   };
 
@@ -223,12 +225,13 @@ int ob_command_response
     char *prefix_string,
     char *suffix_string,
     unsigned char *r7816_buffer,
-    LPDWORD r7816_lth)
+    int *r7816_lth)
 
 { /* ob_command_response */
 
   OB_RDRCTX *rdrctx;
   LONG status_pcsc;
+  DWORD scard_response_length;
   int status;
 
 
@@ -239,9 +242,11 @@ int ob_command_response
     fprintf (stderr, "7816 command %s\n", prefix_string);
     ob_dump_buffer (ctx, x7816_buffer, x7816_lth, 0);
 
-    fprintf(stderr, "clth %X rlth %lX\n", x7816_lth, *r7816_lth);
+    fprintf(stderr, "clth %X rlth %X\n", x7816_lth, *r7816_lth);
   };
-  status_pcsc = SCardTransmit(rdrctx->pcsc, &(rdrctx->pioSendPci), x7816_buffer, x7816_lth, NULL, r7816_buffer, r7816_lth);
+  scard_response_length = *r7816_lth;
+  status_pcsc = SCardTransmit(rdrctx->pcsc, &(rdrctx->pioSendPci), x7816_buffer, x7816_lth, NULL, r7816_buffer, &scard_response_length);
+  *r7816_lth = scard_response_length;
   if (status_pcsc != SCARD_S_SUCCESS)
   {
     rdrctx->last_pcsc_status = status_pcsc;

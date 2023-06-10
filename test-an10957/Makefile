@@ -25,6 +25,8 @@ CFLAGS=-c -g -I. -I../include -I /opt/tester/include -I/usr/include/PCSC -Wall -
 LDFLAGS=-L${BUILD_DIR}/lib /opt/tester/lib/aes.o -ljansson
 
 all:	${PROGS}
+	mkdir -p ../opt/tester/bin
+	cp ${PROGS} ../opt/tester/bin
 
 clean:
 	rm -rvf ${PROGS} core *.o
@@ -42,21 +44,41 @@ sig-test-AN10957:	sig-test-AN10957.o Makefile ob-crypto.o ob-diversify.o ob-init
 divutil.o:	divutil.c ../include/openbadger.h ../include/openbadger-version.h
 	${CC} ${CFLAGS} divutil.c
 
-ob-crypto.o:	ob-crypto.c ../include/openbadger.h
+ob-crypto.o:	ob-crypto.c \
+	../include/ob-an10957.h\
+	../include/ob-crypto.h \
+	../include/openbadger-common.h 
 	${CC} ${CFLAGS} ob-crypto.c
 
-ob-diversify.o:	ob-diversify.c ../include/openbadger.h
+ob-diversify.o:	ob-diversify.c \
+	../include/ob-crypto.h \
+	../include/openbadger-common.h 
 	${CC} ${CFLAGS} ob-diversify.c
 
-ob-init.o:	ob-init.c ../include/openbadger.h
+ob-init.o:	ob-init.c \
+	../include/ob-an10957.h\
+	../include/ob-crypto.h \
+	../include/openbadger-common.h 
 	${CC} ${CFLAGS} ob-init.c
 
-ob-keys.o:	ob-keys.c ../include/openbadger.h
+ob-keys.o:	ob-keys.c \
+	../include/ob-an10957.h\
+	../include/ob-crypto.h \
+	../include/openbadger-common.h 
 	${CC} ${CFLAGS} ob-keys.c
 
-ob-util.o:	ob-util.c ../include/openbadger-common.h
+ob-util.o:	ob-util.c \
+	../include/ob-an10957.h\
+	../include/ob-crypto.h \
+	../include/openbadger-common.h \
+	../include/ob-pacs.h
 	${CC} ${CFLAGS} ob-util.c
 
-sig-test-AN10957.o:	sig-test-AN10957.c ../include/openbadger.h ../include/openbadger-version.h
+sig-test-AN10957.o:	sig-test-AN10957.c \
+	../include/ob-an10957.h\
+	../include/ob-crypto.h \
+	../include/ob-pacs.h \
+	../include/openbadger-common.h \
+	../include/openbadger-version.h 
 	${CC} ${CFLAGS} sig-test-AN10957.c
 

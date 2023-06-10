@@ -27,8 +27,7 @@
 #include <PCSC/winscard.h>
 
 
-//#include <op-pkoc.h>
-//#include <openpkoc.h>
+#include <ob-crypto.h>
 #include <ob-7816.h>
 #include <openbadger-common.h>
 #include <openbadger-version.h>
@@ -65,17 +64,26 @@ int main
   rdrctx = ctx->rdrctx;
   smartcard_select_command_length = 0;
   ctx->test_case = OB_TEST_PIV;
+  ctx->apdu_payload_max_7816 = OB_7816_APDU_PAYLOAD_MAX;
 ctx->verbosity = 9;
   if (argc > 1)
   {
+    int i;
     int rdr;
     int flavor;
     rdr = *(0+(argv[1]));
     ctx->reader_index = rdr - 0x30;
     flavor = *(1+(argv[1]));
     fprintf(stderr, "Reader %d. Flavor %X\n", ctx->reader_index, flavor);
+
+    if (argc > 2)
+    {
+      sscanf(argv [2], "%d", &i);
+      ctx->apdu_payload_max_7816 = i;
+    };
   };
   fprintf(stderr, "test-piv-challenge %s\n", OPENBADGER_VERSION);
+  fprintf(stderr, "APDU Payload max: %d.\n", ctx->apdu_payload_max_7816);
 
   status = ob_init_smartcard(ctx);
 

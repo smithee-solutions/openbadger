@@ -11,6 +11,8 @@ LINK=clang
 LDFLAGS=-g -lpcsclite
 
 all:	${PROGS}
+	mkdir -p ../opt/tester/bin
+	cp ${PROGS} ../opt/tester/bin
 
 clean:
 	rm -f core *.o ${PROGS}

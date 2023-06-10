@@ -31,9 +31,12 @@
 #include <aes.h>
 
 
+#include <ob-crypto.h>
 #include <ob-pacs.h>
 #include <openbadger-common.h>
 #include <openbadger-version.h>
+#include <ob-an10957.h>
+OB_CONTEXT_AN10957 cardctx;
 extern unsigned char secret_key_default [];
 OB_PACS_AN10957 PACS_data;
 extern unsigned char PACS_data_object_default [];
@@ -61,6 +64,8 @@ int
   fprintf(LOG, "sigutil %s\n", OPENBADGER_VERSION);
   status = ob_initialize(new_ctx, OB_SYSTEM_SETTINGS_FILE);
   ctx = *new_ctx;
+  ctx->pacs_data_format = OB_FORMAT_AN10957;
+  ctx->an10957ctx = &cardctx;
   if (status EQUALS STOB_SETTINGS_ERROR)
   {
     if (ctx->verbosity > 3)
@@ -135,6 +140,7 @@ int main (int argc, char *argv [])
 
 
   status = initialize_sigutil(&ctx, argc, argv);
+  ctx->an10957ctx = &cardctx;
   if (ctx->verbosity > 3)
     fprintf(LOG, "PACS Data Object is %lu. bytes\n", sizeof(PACS_data));
   ob_display_PACS_data_object(ctx, (unsigned char *)&PACS_data);
@@ -142,7 +148,7 @@ int main (int argc, char *argv [])
 "            UID: %s\n", string_hex_buffer(ctx, ctx->uid, ctx->uid_size));
   fprintf(LOG, 
 "     Secret Key: %s\n", string_hex_buffer(ctx, ctx->secret_key, OB_AES128_KEY_SIZE));
-  status = diversify_AN10957(ctx);
+  status = ob_diversify_AN10957(ctx);
   if (status != ST_OK)
     fprintf(LOG, "Error %d. in diversification\n", status);
 
@@ -163,9 +169,9 @@ t3 = t2 / OB_AES128_KEY_SIZE;
 t4 = t3 * OB_AES128_KEY_SIZE;
 fprintf(stderr, "t1 %d t2 %d t3 %d t4 %d\n", t1, t2, t3, t4);
     length = (((sizeof(PACS_data) + OB_AES128_KEY_SIZE - 1) / OB_AES128_KEY_SIZE)) * OB_AES128_KEY_SIZE;
-fprintf(LOG, "(%d.)%s", length, buffer_dump_string(ctx, tmp1, length, "Signature data: "));
-  status = aes_encrypt(ctx, tmp1, tmp2, ctx->diversified_key, &length);
-  fprintf(LOG, "%s", buffer_dump_string(ctx, tmp2, length, "Sig ciphertext: "));
+fprintf(LOG, "(%d.)%s", length, ob_buffer_dump_string(ctx, tmp1, length, "Signature data: "));
+  status = aes_encrypt(ctx, tmp1, tmp2, cardctx.diversified_key, &length);
+  fprintf(LOG, "%s", ob_buffer_dump_string(ctx, tmp2, length, "Sig ciphertext: "));
   };
   return(status);
 

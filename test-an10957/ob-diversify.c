@@ -22,29 +22,31 @@
 #include <string.h>
 
 
-#include <openbadger-an10957.h>
-#include <openbadger.h>
+#include <ob-crypto.h>
+#include <openbadger-common.h>
+#include <ob-an10957.h>
 extern unsigned char xor_K1 [];
 extern unsigned char xor_K2 [];
 
 
 int
-  diversify_AN10957
+  ob_diversify_AN10957
     (OB_CONTEXT *ctx)
 
-{ /* main for divutil */
+{ /* ob_diversify_AN10957 */
 
-  unsigned char div_encrypted [2*OB_KEY_SIZE_10957];
-  unsigned char div_input [2*OB_KEY_SIZE_10957];
-  unsigned char div_input_2 [2*OB_KEY_SIZE_10957];
-  unsigned char div_input_new [2*OB_KEY_SIZE_10957];
+  OB_CONTEXT_AN10957 *cardctx;
+  unsigned char div_encrypted [2*OB_AES128_KEY_SIZE];
+  unsigned char div_input [2*OB_AES128_KEY_SIZE];
+  unsigned char div_input_2 [2*OB_AES128_KEY_SIZE];
+  unsigned char div_input_new [2*OB_AES128_KEY_SIZE];
   int encrypted_length;
-  unsigned char K0 [OB_KEY_SIZE_10957];
-  unsigned char K0_plaintext [OB_KEY_SIZE_10957];
-  unsigned char K1 [OB_KEY_SIZE_10957];
-  unsigned char K1_new [OB_KEY_SIZE_10957];
-  unsigned char K2 [OB_KEY_SIZE_10957];
-  unsigned char K2_new [OB_KEY_SIZE_10957];
+  unsigned char K0 [OB_AES128_KEY_SIZE];
+  unsigned char K0_plaintext [OB_AES128_KEY_SIZE];
+  unsigned char K1 [OB_AES128_KEY_SIZE];
+  unsigned char K1_new [OB_AES128_KEY_SIZE];
+  unsigned char K2 [OB_AES128_KEY_SIZE];
+  unsigned char K2_new [OB_AES128_KEY_SIZE];
   int status;
 
 
@@ -61,7 +63,7 @@ int
   {
     if (ctx->verbosity > 3)
     {
-      fprintf(LOG, "        K0: %s\n", string_hex_buffer(ctx, K0, OB_KEY_SIZE_10957));
+      fprintf(LOG, "        K0: %s\n", string_hex_buffer(ctx, K0, OB_AES128_KEY_SIZE));
 
       fprintf(LOG, "---> Step 1 Generate sub-key K1 <---\n");
     };
@@ -77,7 +79,7 @@ int
     {
       if (ctx->verbosity > 3)
         fprintf(LOG, "K0 MSB was 1\n");
-      array_xor(ctx, K1_new, K1, xor_K1, OB_KEY_SIZE_10957);
+      array_xor(ctx, K1_new, K1, xor_K1, OB_AES128_KEY_SIZE);
     }
     else
     {
@@ -87,7 +89,7 @@ int
     memcpy(K1, K1_new, sizeof(K1));
 
     if (ctx->verbosity > 3)
-      fprintf(LOG, "        K1: %s\n", string_hex_buffer(ctx, K1, OB_KEY_SIZE_10957));
+      fprintf(LOG, "        K1: %s\n", string_hex_buffer(ctx, K1, OB_AES128_KEY_SIZE));
   };
   if (status EQUALS ST_OK)
   {
@@ -105,7 +107,7 @@ int
     {
       if (ctx->verbosity > 3)
         fprintf(LOG, "K1 MSB was 1\n");
-      array_xor(ctx, K2_new, K2, xor_K2, OB_KEY_SIZE_10957);
+      array_xor(ctx, K2_new, K2, xor_K2, OB_AES128_KEY_SIZE);
     }
     else
     {
@@ -115,7 +117,7 @@ int
     memcpy(K2, K2_new, sizeof(K2));
 
     if (ctx->verbosity > 3)
-      fprintf(LOG, "        K2: %s\n", string_hex_buffer(ctx, K2, OB_KEY_SIZE_10957));
+      fprintf(LOG, "        K2: %s\n", string_hex_buffer(ctx, K2, OB_AES128_KEY_SIZE));
   };
   if (status EQUALS ST_OK)
   {
@@ -127,7 +129,7 @@ int
     memcpy(div_input+1, ctx->uid, ctx->uid_size);
     div_input [1+ctx->uid_size] = 0x80; // padding start
     if (ctx->verbosity > 3)
-      fprintf(LOG, "%s", buffer_dump_string(ctx, div_input, sizeof(div_input), "DIV Input "));
+      fprintf(LOG, "%s", ob_buffer_dump_string(ctx, div_input, sizeof(div_input), "DIV Input "));
   };
   if (status EQUALS ST_OK)
   {
@@ -135,27 +137,28 @@ int
       fprintf(LOG, "---> Step 3 XOR DIV and K2 <---\n");
 
     memset(div_input_2, 0, sizeof(div_input_2));
-    memcpy(div_input_2+OB_KEY_SIZE_10957, K2, OB_KEY_SIZE_10957);
-    array_xor(ctx, div_input_new, div_input, div_input_2, 2*OB_KEY_SIZE_10957);
+    memcpy(div_input_2+OB_AES128_KEY_SIZE, K2, OB_AES128_KEY_SIZE);
+    array_xor(ctx, div_input_new, div_input, div_input_2, 2*OB_AES128_KEY_SIZE);
     if (ctx->verbosity > 9)
-      fprintf(LOG, "%s", buffer_dump_string(ctx, div_input_new, 2*OB_KEY_SIZE_10957, "DIV xor'd with K2 "));
+      fprintf(LOG, "%s", ob_buffer_dump_string(ctx, div_input_new, 2*OB_AES128_KEY_SIZE, "DIV xor'd with K2 "));
   };
   if (status EQUALS ST_OK)
   {
     if (ctx->verbosity > 3)
       fprintf(LOG, "---> Step 4 Encrypt DIV string with Secret Key <---\n");
-    encrypted_length = 2*OB_KEY_SIZE_10957;
+    encrypted_length = 2*OB_AES128_KEY_SIZE;
     status = aes_encrypt(ctx, div_input_new, div_encrypted, ctx->secret_key, &encrypted_length);
     if (status EQUALS ST_OK)
       if (ctx->verbosity > 3)
-        fprintf(LOG, "%s", buffer_dump_string(ctx, div_encrypted, 2*OB_KEY_SIZE_10957, "DIV encrypted "));
+        fprintf(LOG, "%s", ob_buffer_dump_string(ctx, div_encrypted, 2*OB_AES128_KEY_SIZE, "DIV encrypted "));
   };
-  memcpy(ctx->diversified_key, div_encrypted+OB_KEY_SIZE_10957, OB_KEY_SIZE_10957);
+  cardctx = ctx->an10957ctx;
+  memcpy(cardctx->diversified_key, div_encrypted+OB_AES128_KEY_SIZE, OB_AES128_KEY_SIZE);
 
   if (status EQUALS ST_OK)
-    fprintf(LOG, "%s", buffer_dump_string(ctx, div_encrypted+OB_KEY_SIZE_10957, OB_KEY_SIZE_10957, "Diversified Key: "));
+    fprintf(LOG, "%s", ob_buffer_dump_string(ctx, div_encrypted+OB_AES128_KEY_SIZE, OB_AES128_KEY_SIZE, "Diversified Key: "));
 
   return(status);
 
-} /* main for divutil */
+} /* ob_diversify_AN10957 */
 

@@ -17,15 +17,22 @@
 # make file for openbadger
 
 all:
+	(cd common; make);
 	(cd test-800-73; make);
 	(cd test-an10957; make);
 
 clean:
+	(cd common; make clean);
 	(cd test-800-73; make clean);
 	(cd test-an10957; make clean);
 	(cd package; make clean)
 	rm -rf opt *deb
 
 package:	all
+	mkdir -p opt/tester/include
+	cp include/ob-7816.h opt/tester/include
+	cp include/ob-crypto.h opt/tester/include
+	cp include/openbadger-common.h opt/tester/include
+	cp include/openbadger-version.h opt/tester/include
 	(cd package; make package)
 

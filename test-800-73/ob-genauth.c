@@ -125,10 +125,6 @@ int ob_challenge_response
   dyn_auth_template_length = sizeof(dyn_auth_template);
   memset (dyn_auth_template, 0, sizeof (dyn_auth_template));
 
-  switch(ctx->test_case)
-  {
-  case OB_TEST_PIV:
-
     ctx->key_reference = OB_7816_KEY_CARD_AUTHENTICATION;
     ctx->key_size = 2048/8;
     ctx->challenge_type = OB_7816_DYNAUTH_CHALLENGE;
@@ -188,8 +184,6 @@ int ob_challenge_response
       part1_length = ctx->apdu_payload_max_7816;
     msg_lc = part1_length;
     msg_le = 0;
-    break;
-  };
 
   fprintf (stderr, "Setting up GENERAL AUTHENTICATE:\n");
 
@@ -206,12 +200,55 @@ fprintf(stderr, "... payload lth 0x%X msg_7816_lth %X\n",
   status = ob_build_7816_message (ctx, msg_cla, msg_ins, msg_p1, msg_p2, lc_lth,
      msg_le, dyn_auth_template, payload_lth, 0, msg_7816, &msg_7816_lth);
 };
+  response_7816_lth = sizeof (response_7816);
+  if (status EQUALS ST_OK)
+  {
+fprintf(stderr, "7816 cmd %X rsp %X\n", msg_7816_lth, response_7816_lth);
+    status = ob_command_response (ctx, msg_7816, msg_7816_lth, "First GenAuth PDU Request:", "First GenAuth PDU Response:", response_7816, &response_7816_lth);
+  };
+
+fprintf(stderr, "assuming response ok...%02X%02x %d.\n", response_7816[0], response_7816[1], response_7816_lth);
+{
+  unsigned int lc_lth;
+  unsigned int payload_lth;
+  unsigned char *payload;
+      msg_cla = 0;
+  payload_lth = dyn_auth_template_length - part1_length;
+  payload = dyn_auth_template + part1_length;
+  fprintf(stderr, "second send: dynauth %d. part2 %d.\n", dyn_auth_template_length, payload_lth);
+  msg_lc = payload_lth;
+  fprintf(stderr, "total was %d first was %d second is %d\n",
+    dyn_auth_template_length, part1_length, msg_lc);
+  lc_lth = msg_lc;
+  status = ob_build_7816_message (ctx, msg_cla, msg_ins, msg_p1, msg_p2, lc_lth,
+     msg_le, dyn_auth_template, payload_lth, 0, msg_7816, &msg_7816_lth);
   if (status EQUALS ST_OK)
   {
     response_7816_lth = sizeof (response_7816);
 fprintf(stderr, "7816 cmd %X rsp %X\n", msg_7816_lth, response_7816_lth);
-    status = ob_command_response (ctx, msg_7816, msg_7816_lth, "First GenAuth PDU Request:", "First GenAuth PDU Response:", response_7816, &response_7816_lth);
+    status = ob_command_response (ctx, msg_7816, msg_7816_lth, "Second GenAuth PDU Request:", "Second GenAuth PDU Response:", response_7816, &response_7816_lth);
+
+{
+  DWORD scard_response_length;
+  OB_RDRCTX *rdrctx;
+  LONG status_pcsc;
+  unsigned char get_next [] = {0x00, 0xc0, 0x00, 0x00, 0x00};
+  rdrctx = ctx->rdrctx;
+  scard_response_length = 0;
+  status_pcsc = SCardTransmit(rdrctx->pcsc, &(rdrctx->pioSendPci), get_next, sizeof(get_next), NULL, response_7816, &scard_response_length);
+    fprintf (stderr, "7816 response 3\n");
+    ob_dump_buffer (ctx, response_7816, scard_response_length, 0);
+fprintf(stderr, "assuming response ok...%02X%02x %d.\n", response_7816[0], response_7816[1], response_7816_lth);
+
+  fprintf(stderr, "response 4\n");
+  scard_response_length = 0;
+  status_pcsc = SCardTransmit(rdrctx->pcsc, &(rdrctx->pioSendPci), get_next, sizeof(get_next), NULL, response_7816, &scard_response_length);
+    fprintf (stderr, "7816 response 4\n");
+    ob_dump_buffer (ctx, response_7816, scard_response_length, 0);
+};
+
   };
+};
 
   return(status);
 
@@ -252,9 +289,10 @@ int ob_command_response
     rdrctx->last_pcsc_status = status_pcsc;
     status = STOB_PCSC_TRANSMIT_2;
   };
+  fprintf(stderr, "back from SCardTransmit, status %d. %lX\n", status, rdrctx->last_pcsc_status);
   if (status EQUALS ST_OK)
   {
-    fprintf (stderr, "%s\n", suffix_string);
+    fprintf (stderr, "7186 response %s (%d. bytes)\n", suffix_string, *r7816_lth);
     ob_dump_buffer(ctx, r7816_buffer, *r7816_lth, 0);
   };
   return (status);

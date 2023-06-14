@@ -16,7 +16,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-PROGS=sig-test-AN10957
+PROGS=divutil sig-test-AN10957
 
 CC=clang
 LINK=clang
@@ -35,13 +35,14 @@ package:	all
 	mkdir -p ../opt/tester/bin
 	cp ${PROGS} ../opt/tester/bin
 
-divutil:	divutil.o ob-crypto.o ob-diversify.o ob-init.o ob-keys.o ob-prims.o Makefile
-	${LINK} -o divutil divutil.o ob-crypto.o ob-diversify.o ob-init.o ob-keys.o ob-prims.o ${LDFLAGS}
+divutil:	divutil.o ob-crypto.o ob-diversify.o ob-init.o ob-keys.o ob-util.o Makefile
+	${LINK} -o divutil divutil.o ob-crypto.o ob-diversify.o ob-init.o ob-keys.o ob-util.o ${LDFLAGS}
 
 sig-test-AN10957:	sig-test-AN10957.o Makefile ob-crypto.o ob-diversify.o ob-init.o ob-keys.o ob-util.o
 	${LINK} -o sig-test-AN10957 sig-test-AN10957.o ob-crypto.o ob-diversify.o ob-init.o ob-keys.o ob-util.o ${LDFLAGS}
 
-divutil.o:	divutil.c ../include/openbadger.h ../include/openbadger-version.h
+divutil.o:	divutil.c \
+	../include/openbadger-common.h 
 	${CC} ${CFLAGS} divutil.c
 
 ob-crypto.o:	ob-crypto.c \

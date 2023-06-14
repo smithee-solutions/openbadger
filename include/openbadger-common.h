@@ -33,9 +33,10 @@
 #define OB_FORMAT_Pzz2     (5)
 #define OB_FORMAT_PRIVATE  (255)
 
-// test cases exercised (in 800-73 testing)
+// test cases exercised (across all tests)
 #define OB_TEST_VECTORS (0)
 #define OB_TEST_PIV     (1)
+#define OB_TEST_PKOC    (2)
 
 // tool being used (in AN-10957 testing)
 

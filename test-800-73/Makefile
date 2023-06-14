@@ -8,7 +8,7 @@ CC=clang
 # PCSC is included because their own includes get it wrong
 CFLAGS=-c -g -I/usr/include/PCSC -I../include -Wall -Werror
 LINK=clang
-LDFLAGS=-g -lpcsclite
+LDFLAGS=-g ../opt/tester/lib/libopenbadger.a  -lpcsclite 
 
 all:	${PROGS}
 	mkdir -p ../opt/tester/bin
@@ -20,16 +20,12 @@ clean:
 package:
 	echo no package set-up available
 
-test-piv-challenge:	Makefile test-piv-challenge.o ob-genauth.o ob-utils.o
-	${LINK} -o test-piv-challenge test-piv-challenge.o ob-genauth.o ob-utils.o ${LDFLAGS}
+test-piv-challenge:	Makefile test-piv-challenge.o ob-genauth.o
+	${LINK} -o test-piv-challenge test-piv-challenge.o ob-genauth.o ${LDFLAGS}
 
 ob-genauth.o:	ob-genauth.c \
 	../include/ob-73-4.h ../include/ob-7816.h ../include/ob-pcsc.h ../include/openbadger-common.h
 	${CC} ${CFLAGS} ob-genauth.c
-
-ob-utils.o:	ob-utils.c \
-	../include/ob-73-4.h ../include/ob-7816.h ../include/ob-pcsc.h ../include/openbadger-common.h
-	${CC} ${CFLAGS} ob-utils.c
 
 test-piv-challenge.o:	test-piv-challenge.c \
 	../include/ob-73-4.h ../include/ob-7816.h ../include/ob-pcsc.h ../include/openbadger-common.h ../include/openbadger-version.h

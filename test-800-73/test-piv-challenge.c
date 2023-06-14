@@ -1,6 +1,14 @@
 /*
   test-piv-challenge - test the PIV style of "challenge/response"
 
+  Usage:
+    test-piv-challenge <Reader number> <payload-size>]
+
+  Reader number is default 0.  Note Contact/Contactless readers might have the CL interface on reader 1.
+  Use "opensc-tool --list-readers" to check.
+
+  Paylaod size is how big to make the APDU.  Default is 255.
+
   (C)Copyright 2023 Smithee Solutions LLC
 
   Licensed under the Apache License, Version 2.0 (the "License");
@@ -70,11 +78,9 @@ ctx->verbosity = 9;
   {
     int i;
     int rdr;
-    int flavor;
     rdr = *(0+(argv[1]));
     ctx->reader_index = rdr - 0x30;
-    flavor = *(1+(argv[1]));
-    fprintf(stderr, "Reader %d. Flavor %X\n", ctx->reader_index, flavor);
+    fprintf(stderr, "Reader %d.\n", ctx->reader_index);
 
     if (argc > 2)
     {
@@ -87,7 +93,10 @@ ctx->verbosity = 9;
 
   status = ob_init_smartcard(ctx);
 
-  // test cases: 1: test vectors, 2: PIV, 3: PKOC
+  /*
+    either use test vectors (specific to this test) or do the actual thing.
+    there are multiple tests in openbadger see openbadger-local.h for the list.
+  */
 
   if (status EQUALS ST_OK)
   {

@@ -11,7 +11,8 @@ settings
 --------
 
 'Settings' are parameters set for every run of the program.
-opebadger-settings.json contains the settings.
+openbadger-settings.json contains the settings.  The default copy is
+in /opt/tester/etc/openbadger-settings.json
 
 "verbosity"
 "3" for normal output, "9" for debug output.

@@ -78,9 +78,6 @@ int ob_build_7816_message
     message_7816 [2] = msg_p1;
     message_7816 [3] = msg_p2;
     message_7816 [4] = msg_lc;
-    if (ctx->verbosity > 3)
-      fprintf (stderr, "7816: CLA %02X INS %02X P1 %02X P2 %02X Lc %02X\n",
-        msg_cla, msg_ins, msg_p1, msg_p2, msg_lc);
 
     memcpy (message_7816 + payload_offset, payload, payload_length);
     *message_7816_length = payload_offset + payload_length;
@@ -125,73 +122,63 @@ int ob_challenge_response
   dyn_auth_template_length = sizeof(dyn_auth_template);
   memset (dyn_auth_template, 0, sizeof (dyn_auth_template));
 
-    ctx->key_reference = OB_7816_KEY_CARD_AUTHENTICATION;
-    ctx->key_size = 2048/8;
-    ctx->challenge_type = OB_7816_DYNAUTH_CHALLENGE;
+  ctx->key_reference = OB_7816_KEY_CARD_AUTHENTICATION;
+  ctx->key_size = 2048/8;
+  ctx->challenge_type = OB_7816_DYNAUTH_CHALLENGE;
 
-    // set up Dynamic Authenticate (tag 7C)
+  // set up Dynamic Authenticate (tag 7C)
 
-    dyn_auth_template_length = 0;
+  dyn_auth_template_length = 0;
 
-    // first is tag for dyn auth obj
-    dyn_auth_template [dyn_auth_template_length] = 0x7c;
-    dyn_auth_template_length ++;
+  // first is tag for dyn auth obj
+  dyn_auth_template [dyn_auth_template_length] = 0x7c;
+  dyn_auth_template_length ++;
 
-    // next is TLV length of whole deal
-    ob_add_tag_length (dyn_auth_template+dyn_auth_template_length,
-      ctx->key_size+2+4, // 2 for response marker, challength tlv
-      &dyn_auth_template_length);
+  // next is TLV length of whole deal
+  ob_add_tag_length (dyn_auth_template+dyn_auth_template_length,
+    ctx->key_size+2+4, // 2 for response marker, challength tlv
+    &dyn_auth_template_length);
 
-    // next is response placeholder
-    dyn_auth_template [dyn_auth_template_length] = OB_7816_DYNAUTH_RESPONSE;
-    dyn_auth_template_length ++;
-    dyn_auth_template [dyn_auth_template_length] = 0;
-    dyn_auth_template_length ++;
+  // next is response placeholder
+  dyn_auth_template [dyn_auth_template_length] = OB_7816_DYNAUTH_RESPONSE;
+  dyn_auth_template_length ++;
+  dyn_auth_template [dyn_auth_template_length] = 0;
+  dyn_auth_template_length ++;
 
-    // next is challenge with challenge type and data
-    dyn_auth_template [dyn_auth_template_length] = 
-      ctx->challenge_type;
-    dyn_auth_template_length ++;
+  // next is challenge with challenge type and data
+  dyn_auth_template [dyn_auth_template_length] = 
+    ctx->challenge_type;
+  dyn_auth_template_length ++;
 
-    // next is TLV length of challenge
-    ob_add_tag_length (dyn_auth_template+dyn_auth_template_length,
-      ctx->key_size, &dyn_auth_template_length);
+  // next is TLV length of challenge
+  ob_add_tag_length (dyn_auth_template+dyn_auth_template_length,
+    ctx->key_size, &dyn_auth_template_length);
 
-    // next is challenge itself (same length as key)
-    memcpy ((void *)dyn_auth_template+dyn_auth_template_length,
-      (void *)challenge_message, ctx->key_size);
-    dyn_auth_template_length = dyn_auth_template_length + ctx->key_size;
+  // next is challenge itself (same length as key)
+  memcpy ((void *)dyn_auth_template+dyn_auth_template_length,
+    (void *)challenge_message, ctx->key_size);
+  dyn_auth_template_length = dyn_auth_template_length + ctx->key_size;
 
-    if (ctx->verbosity > 4)
-    {
-      fprintf (stderr, "Dynamic Authentication Template (l=%d):\n",
-        dyn_auth_template_length);
-      ob_dump_buffer (ctx, dyn_auth_template, dyn_auth_template_length, 0);
-    };
+  // set up the first 7816 command
 
-    // set up the first 7816 command
+  if (dyn_auth_template_length > ctx->apdu_payload_max_7816)
+    msg_cla = 0x10;
+  else
+    msg_cla = 0;
+  msg_ins = 0x87;
+  msg_p1 = OB_7816_ALGO_REF_RSA2048;
+  msg_p2 = ctx->key_reference;
 
-    if (dyn_auth_template_length > ctx->apdu_payload_max_7816)
-      msg_cla = 0x10;
-    else
-      msg_cla = 0;
-    msg_ins = 0x87;
-    msg_p1 = OB_7816_ALGO_REF_RSA2048;
-    msg_p2 = ctx->key_reference;
-
-    part1_length = dyn_auth_template_length;
-    if (part1_length > ctx->apdu_payload_max_7816)
-      part1_length = ctx->apdu_payload_max_7816;
-    msg_lc = part1_length;
-    msg_le = 0;
-
-  fprintf (stderr, "Setting up GENERAL AUTHENTICATE:\n");
+  part1_length = dyn_auth_template_length;
+  if (part1_length > ctx->apdu_payload_max_7816)
+    part1_length = ctx->apdu_payload_max_7816;
+  msg_lc = part1_length;
+  msg_le = 0;
 
   // set up a GENERAL AUTHENTICATE.  See NIST SP800-73-4 part 2 section 3.2.4
 
+  fprintf (stderr, "Setting up GENERAL AUTHENTICATE:\n");
   msg_7816_lth = 0;
-fprintf(stderr, "... payload lth 0x%X msg_7816_lth %X\n",
-  part1_length, msg_7816_lth);
 {
   unsigned int lc_lth;
   unsigned int payload_lth;
@@ -203,11 +190,10 @@ fprintf(stderr, "... payload lth 0x%X msg_7816_lth %X\n",
   response_7816_lth = sizeof (response_7816);
   if (status EQUALS ST_OK)
   {
-fprintf(stderr, "7816 cmd %X rsp %X\n", msg_7816_lth, response_7816_lth);
     status = ob_command_response (ctx, msg_7816, msg_7816_lth, "First GenAuth PDU Request:", "First GenAuth PDU Response:", response_7816, &response_7816_lth);
   };
 
-fprintf(stderr, "assuming response ok...%02X%02x %d.\n", response_7816[0], response_7816[1], response_7816_lth);
+fprintf(stderr, "assuming response ok... %d. %02X%02x %d.\n", status, response_7816[0], response_7816[1], response_7816_lth);
 {
   unsigned int lc_lth;
   unsigned int payload_lth;
@@ -221,7 +207,7 @@ fprintf(stderr, "assuming response ok...%02X%02x %d.\n", response_7816[0], respo
     dyn_auth_template_length, part1_length, msg_lc);
   lc_lth = msg_lc;
   status = ob_build_7816_message (ctx, msg_cla, msg_ins, msg_p1, msg_p2, lc_lth,
-     msg_le, dyn_auth_template, payload_lth, 0, msg_7816, &msg_7816_lth);
+     msg_le, payload, payload_lth, 0, msg_7816, &msg_7816_lth);
   if (status EQUALS ST_OK)
   {
     response_7816_lth = sizeof (response_7816);
@@ -234,17 +220,21 @@ fprintf(stderr, "7816 cmd %X rsp %X\n", msg_7816_lth, response_7816_lth);
   LONG status_pcsc;
   unsigned char get_next [] = {0x00, 0xc0, 0x00, 0x00, 0x00};
   rdrctx = ctx->rdrctx;
-  scard_response_length = 0;
+  scard_response_length = sizeof(response_7816);
+  fprintf (stderr, "---7816 command (get next data)\n");
+  ob_dump_buffer (ctx, get_next, sizeof(get_next), 0);
   status_pcsc = SCardTransmit(rdrctx->pcsc, &(rdrctx->pioSendPci), get_next, sizeof(get_next), NULL, response_7816, &scard_response_length);
     fprintf (stderr, "7816 response 3\n");
     ob_dump_buffer (ctx, response_7816, scard_response_length, 0);
 fprintf(stderr, "assuming response ok...%02X%02x %d.\n", response_7816[0], response_7816[1], response_7816_lth);
 
+#if 0
   fprintf(stderr, "response 4\n");
-  scard_response_length = 0;
+  scard_response_length = sizeof(response_7816);
   status_pcsc = SCardTransmit(rdrctx->pcsc, &(rdrctx->pioSendPci), get_next, sizeof(get_next), NULL, response_7816, &scard_response_length);
     fprintf (stderr, "7816 response 4\n");
     ob_dump_buffer (ctx, response_7816, scard_response_length, 0);
+#endif
 };
 
   };
@@ -272,14 +262,14 @@ int ob_command_response
   int status;
 
 
+  if (ctx->verbosity > 3)
+    fprintf(stderr, "ob_command_response: top\n");
   status = ST_OK;
   rdrctx = ctx->rdrctx;
   if (ctx->verbosity > 3)
   {
-    fprintf (stderr, "7816 command %s\n", prefix_string);
+    fprintf (stderr, "--sending 7816 command %s\n", prefix_string);
     ob_dump_buffer (ctx, x7816_buffer, x7816_lth, 0);
-
-    fprintf(stderr, "clth %X rlth %X\n", x7816_lth, *r7816_lth);
   };
   scard_response_length = *r7816_lth;
   status_pcsc = SCardTransmit(rdrctx->pcsc, &(rdrctx->pioSendPci), x7816_buffer, x7816_lth, NULL, r7816_buffer, &scard_response_length);
@@ -295,6 +285,8 @@ int ob_command_response
     fprintf (stderr, "7186 response %s (%d. bytes)\n", suffix_string, *r7816_lth);
     ob_dump_buffer(ctx, r7816_buffer, *r7816_lth, 0);
   };
+  if (ctx->verbosity > 3)
+    fprintf(stderr, "ob_command_response: bottom\n");
   return (status);
 
 } /* ob_command_response*/

@@ -37,6 +37,7 @@
 #define OB_TEST_VECTORS (0)
 #define OB_TEST_PIV     (1)
 #define OB_TEST_PKOC    (2)
+#define OB_TEST_GETCERT (3)
 
 // tool being used (in AN-10957 testing)
 
@@ -70,6 +71,9 @@
 #define STOB_NO_ARGUMENTS      (  11)
 #define STOB_NOT_IMPLEMENTED   (  12)
 #define STOB_SETTINGS_ERROR    (  13)
+#define STOB_PIV_GETCERT       (  14)
+#define STOB_GETCERT_FRAGMENT  (  15)
+#define STOB_INIT_FILES        (  16)
 
 typedef struct ob_context
 {
@@ -80,6 +84,7 @@ typedef struct ob_context
   unsigned long int tool_identifier;  // which "tool" is this.
   FILE *current_file;
   int pacs_data_format;
+  FILE *der_out;
 
   // for PCSC reader control
   int reader_index;

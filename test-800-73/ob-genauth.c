@@ -116,6 +116,7 @@ int ob_challenge_response
 
   status = ST_OK;
   memset(challenge_message, 0, sizeof(challenge_message));
+challenge_message [17] = 17;
 
   // 7816 APDU is a "Dynamic Authenticate"
 

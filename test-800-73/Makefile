@@ -2,7 +2,7 @@
 
 # (C)2023 Smithee Solutions LLC
 
-PROGS=test-piv-challenge
+PROGS=obtest-challenge obtest-getcert
 
 CC=clang
 # PCSC is included because their own includes get it wrong
@@ -20,14 +20,21 @@ clean:
 package:
 	echo no package set-up available
 
-test-piv-challenge:	Makefile test-piv-challenge.o ob-genauth.o
-	${LINK} -o test-piv-challenge test-piv-challenge.o ob-genauth.o ${LDFLAGS}
+obtest-challenge:	Makefile obtest-challenge.o ob-genauth.o
+	${LINK} -o obtest-challenge obtest-challenge.o ob-genauth.o ${LDFLAGS}
+
+obtest-getcert:	Makefile obtest-getcert.o ob-genauth.o
+	${LINK} -o obtest-getcert obtest-getcert.o ob-genauth.o ${LDFLAGS}
 
 ob-genauth.o:	ob-genauth.c \
 	../include/ob-73-4.h ../include/ob-7816.h ../include/ob-pcsc.h ../include/openbadger-common.h
 	${CC} ${CFLAGS} ob-genauth.c
 
-test-piv-challenge.o:	test-piv-challenge.c \
+obtest-challenge.o:	obtest-challenge.c \
 	../include/ob-73-4.h ../include/ob-7816.h ../include/ob-pcsc.h ../include/openbadger-common.h ../include/openbadger-version.h
-	${CC} ${CFLAGS} test-piv-challenge.c
+	${CC} ${CFLAGS} obtest-challenge.c
+
+obtest-getcert.o:	obtest-getcert.c \
+	../include/ob-73-4.h ../include/ob-7816.h ../include/ob-pcsc.h ../include/openbadger-common.h ../include/openbadger-version.h
+	${CC} ${CFLAGS} obtest-getcert.c
 

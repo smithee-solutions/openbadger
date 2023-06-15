@@ -54,6 +54,8 @@ int main
 
 { /* main for test-piv-challenge */
 
+  unsigned char challenge_message [OB_RSA2048_KEY_SIZE];
+  FILE *challenge_message_file;
   OB_CONTEXT *ctx;
   DWORD dwRecvLength;
   BYTE pbRecvBuffer [2*OB_7816_APDU_PAYLOAD_MAX]; // probably actually 1x plus 2
@@ -86,6 +88,11 @@ ctx->verbosity = 9;
     {
       sscanf(argv [2], "%d", &i);
       ctx->apdu_payload_max_7816 = i;
+      if (argc > 3)
+      {
+        challenge_message_file = fopen(argv [3], "r");
+        fread(ctx->challenge_message, sizeof(challenge_message [0]), sizeof(ctx->challenge_message), challenge_message_file);
+      };
     };
   };
   fprintf(stderr, "test-piv-challenge %s\n", OPENBADGER_VERSION);

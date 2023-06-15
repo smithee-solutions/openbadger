@@ -21,4 +21,5 @@
 
 
 #define OB_AES128_KEY_SIZE (128/8)
+#define OB_RSA2048_KEY_SIZE (2048/8)
 

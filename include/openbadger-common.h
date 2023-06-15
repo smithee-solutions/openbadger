@@ -84,6 +84,7 @@ typedef struct ob_context
   unsigned long int tool_identifier;  // which "tool" is this.
   FILE *current_file;
   int pacs_data_format;
+  unsigned char challenge_message [OB_RSA2048_KEY_SIZE];
   FILE *der_out;
 
   // for PCSC reader control

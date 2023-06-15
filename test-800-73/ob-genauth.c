@@ -97,7 +97,6 @@ int ob_challenge_response
 
 { /* ob_challenge_response */
 
-  unsigned char challenge_message [OB_7816_BUFFER_MAX];
   unsigned char dyn_auth_template [8*OB_7816_APDU_PAYLOAD_MAX];  // at least two buffers
   int dyn_auth_template_length;
   unsigned char msg_7816 [OB_7816_BUFFER_MAX];
@@ -115,8 +114,6 @@ int ob_challenge_response
 
 
   status = ST_OK;
-  memset(challenge_message, 0, sizeof(challenge_message));
-challenge_message [17] = 17;
 
   // 7816 APDU is a "Dynamic Authenticate"
 
@@ -157,7 +154,7 @@ challenge_message [17] = 17;
 
   // next is challenge itself (same length as key)
   memcpy ((void *)dyn_auth_template+dyn_auth_template_length,
-    (void *)challenge_message, ctx->key_size);
+    (void *)ctx->challenge_message, sizeof(ctx->challenge_message));
   dyn_auth_template_length = dyn_auth_template_length + ctx->key_size;
 
   // set up the first 7816 command

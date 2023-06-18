@@ -84,13 +84,15 @@ typedef struct ob_context
   unsigned long int tool_identifier;  // which "tool" is this.
   FILE *current_file;
   int pacs_data_format;
-  unsigned char challenge_message [OB_RSA2048_KEY_SIZE];
   FILE *der_out;
 
   // for PCSC reader control
   int reader_index;
   char reader_name [OB_STRING_MAX];
   void *rdrctx;
+
+  // for OSDP control
+  char pd_control [OB_STRING_MAX];
 
   // 7816 and specifically general authenticate context
 
@@ -104,6 +106,7 @@ typedef struct ob_context
   int uid_size;
 
   // crypto details
+  unsigned char challenge_message [OB_RSA2048_KEY_SIZE];
   unsigned char secret_key [OB_AES128_KEY_SIZE];
   unsigned char iv [OB_AES128_KEY_SIZE];
   unsigned char ec_public_key [65];

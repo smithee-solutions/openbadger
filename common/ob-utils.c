@@ -226,9 +226,9 @@ int ob_init_smartcard
       protocol_name = "T1";
       break;
     }
-    if (ctx->verbosity > 1)
+    if (ctx->verbosity > 3)
       fprintf (stderr, "Protocol is %s\n", protocol_name);
-    if (ctx->verbosity > 2)
+    if (ctx->verbosity > 3)
       fprintf (stderr, "SCardTransmit (step 1 select card applet)\n");
   };
   rdrctx->last_pcsc_status = status_pcsc;

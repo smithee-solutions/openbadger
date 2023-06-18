@@ -123,6 +123,7 @@ int ob_challenge_response
   ctx->key_reference = OB_7816_KEY_CARD_AUTHENTICATION;
   ctx->key_size = 2048/8;
   ctx->challenge_type = OB_7816_DYNAUTH_CHALLENGE;
+  fprintf(stderr, "Challenge type %02X\n", ctx->challenge_type);
 
   // set up Dynamic Authenticate (tag 7C)
 

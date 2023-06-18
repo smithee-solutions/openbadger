@@ -28,4 +28,5 @@ typedef struct ob_rdrctx
 } OB_RDRCTX;
 
 int ob_init_smartcard(OB_CONTEXT *ctx);
+char *ob_pcsc_error_string(DWORD status_pcsc);
 

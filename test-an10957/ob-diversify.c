@@ -152,7 +152,7 @@ int
       if (ctx->verbosity > 3)
         fprintf(LOG, "%s", ob_buffer_dump_string(ctx, div_encrypted, 2*OB_AES128_KEY_SIZE, "DIV encrypted "));
   };
-  cardctx = ctx->an10957ctx;
+  cardctx = ctx->an10957_ctx;
   memcpy(cardctx->diversified_key, div_encrypted+OB_AES128_KEY_SIZE, OB_AES128_KEY_SIZE);
 
   if (status EQUALS ST_OK)

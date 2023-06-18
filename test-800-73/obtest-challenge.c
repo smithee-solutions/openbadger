@@ -91,7 +91,10 @@ ctx->verbosity = 9;
       if (argc > 3)
       {
         challenge_message_file = fopen(argv [3], "r");
-        fread(ctx->challenge_message, sizeof(challenge_message [0]), sizeof(ctx->challenge_message), challenge_message_file);
+        if (challenge_message_file != NULL)
+          fread(ctx->challenge_message, sizeof(challenge_message [0]), sizeof(ctx->challenge_message), challenge_message_file);
+        else
+          fprintf(stderr, "Cannot read challenge file %s\n", argv [3]);
       };
     };
   };

@@ -103,11 +103,15 @@ typedef struct ob_context
   unsigned char uid [OB_UID_SIZE];
   int uid_size;
 
-  // crypto keys
+  // crypto details
   unsigned char secret_key [OB_AES128_KEY_SIZE];
   unsigned char iv [OB_AES128_KEY_SIZE];
+  unsigned char ec_public_key [65];
+  unsigned char pkoc_signature [64];
 
-  void *an10957ctx;
+  void *an10957_ctx;
+
+  void *pkoc_ctx;
 } OB_CONTEXT;
 
 int aes_encrypt(OB_CONTEXT *ctx, unsigned char *plaintext, unsigned char *ciphertext, unsigned char *key, int *length);
@@ -118,6 +122,7 @@ int ob_command_response(OB_CONTEXT *ctx, unsigned char *x7816_buffer, int x7816_
 void ob_display_PACS_data_object(OB_CONTEXT *ctx, unsigned char *credential_contents);
 int ob_diversify_AN10957(OB_CONTEXT *ctx);
 int ob_initialize(OB_CONTEXT **initiaized_context, char *settings_filename);
+int ob_init_smartcard(OB_CONTEXT *ctx);
 char *ob_buffer_dump_string(OB_CONTEXT *ctx, unsigned char *buffer, int buffer_size, char *tag);
 void ob_dump_buffer(OB_CONTEXT *ctx, unsigned char *bytes, int length, int dest);
 unsigned char *string_buffer_hex(OB_CONTEXT *ctx, const char *buf, int *buf_lth);

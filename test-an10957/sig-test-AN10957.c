@@ -65,7 +65,7 @@ int
   status = ob_initialize(new_ctx, OB_SYSTEM_SETTINGS_FILE);
   ctx = *new_ctx;
   ctx->pacs_data_format = OB_FORMAT_AN10957;
-  ctx->an10957ctx = &cardctx;
+  ctx->an10957_ctx = &cardctx;
   if (status EQUALS STOB_SETTINGS_ERROR)
   {
     if (ctx->verbosity > 3)
@@ -140,7 +140,7 @@ int main (int argc, char *argv [])
 
 
   status = initialize_sigutil(&ctx, argc, argv);
-  ctx->an10957ctx = &cardctx;
+  ctx->an10957_ctx = &cardctx;
   if (ctx->verbosity > 3)
     fprintf(LOG, "PACS Data Object is %lu. bytes\n", sizeof(PACS_data));
   ob_display_PACS_data_object(ctx, (unsigned char *)&PACS_data);

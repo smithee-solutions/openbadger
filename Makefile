@@ -32,6 +32,7 @@ package:	all
 	mkdir -p opt/tester/include
 	cp include/ob-7816.h opt/tester/include
 	cp include/ob-crypto.h opt/tester/include
+	cp include/ob-pcsc.h opt/tester/include
 	cp include/openbadger-common.h opt/tester/include
 	cp include/openbadger-version.h opt/tester/include
 	(cd package; make package)

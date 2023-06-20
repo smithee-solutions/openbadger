@@ -93,6 +93,7 @@ typedef struct ob_context
 
   // for OSDP control
   char pd_control [OB_STRING_MAX];
+  int bits_to_return;
 
   // 7816 and specifically general authenticate context
 

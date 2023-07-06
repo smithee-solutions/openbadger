@@ -108,6 +108,7 @@ int ob_challenge_response
   unsigned char msg_p1;
   unsigned char msg_p2;
   int part1_length;
+  FILE *resp;
   unsigned char response_7816 [2*OB_7816_APDU_PAYLOAD_MAX];
   int response_7816_lth; // not DWORD
   int status;
@@ -123,6 +124,7 @@ int ob_challenge_response
   ctx->key_reference = OB_7816_KEY_CARD_AUTHENTICATION;
   ctx->key_size = 2048/8;
   ctx->challenge_type = OB_7816_DYNAUTH_CHALLENGE;
+//  ctx->challenge_type = OB_7816_DYNAUTH_WITNESS;
   fprintf(stderr, "Challenge type %02X\n", ctx->challenge_type);
 
   // set up Dynamic Authenticate (tag 7C)
@@ -191,7 +193,6 @@ int ob_challenge_response
   {
     status = ob_command_response (ctx, msg_7816, msg_7816_lth, "First GenAuth PDU Request:", "First GenAuth PDU Response:", response_7816, &response_7816_lth);
   };
-
 fprintf(stderr, "assuming response ok... %d. %02X%02x %d.\n", status, response_7816[0], response_7816[1], response_7816_lth);
 {
   unsigned int lc_lth;
@@ -212,6 +213,11 @@ fprintf(stderr, "assuming response ok... %d. %02X%02x %d.\n", status, response_7
     response_7816_lth = sizeof (response_7816);
 fprintf(stderr, "7816 cmd %X rsp %X\n", msg_7816_lth, response_7816_lth);
     status = ob_command_response (ctx, msg_7816, msg_7816_lth, "Second GenAuth PDU Request:", "Second GenAuth PDU Response:", response_7816, &response_7816_lth);
+  if (status EQUALS ST_OK)
+  {
+    resp = fopen("response.bin", "w");
+    fwrite(response_7816+8, sizeof(response_7816[0]), response_7816_lth-2-8, resp); // drop the status; drop the tags at the front
+  };
 
 {
   DWORD scard_response_length;
@@ -226,6 +232,10 @@ fprintf(stderr, "7816 cmd %X rsp %X\n", msg_7816_lth, response_7816_lth);
     fprintf (stderr, "7816 response 3\n");
     ob_dump_buffer (ctx, response_7816, scard_response_length, 0);
 fprintf(stderr, "assuming response ok...%02X%02x %d.\n", response_7816[0], response_7816[1], response_7816_lth);
+  if (status EQUALS ST_OK)
+  {
+    fwrite(response_7816, sizeof(response_7816[0]), scard_response_length-2, resp); // drop the status
+  };
 
 #if 0
   fprintf(stderr, "response 4\n");

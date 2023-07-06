@@ -1,0 +1,9 @@
+hhg
+
+obtest-getcert - gets the certificate.
+
+might be compressed.  use "gzip --decompress cert.Z" to decompress.
+
+obtest-challenge 1 255 - to send all 0x17's
+
+

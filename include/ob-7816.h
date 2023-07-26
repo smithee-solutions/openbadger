@@ -30,8 +30,3 @@
 #define OB_7816_KEY_PIV_AUTHENTICATION_KEY (0x9A)
 #define OB_7816_KEY_SIGNATURE              (0x9C)
 
-// from 800-73-4 Part 2 Table 7
-#define OB_7816_DYNAUTH_WITNESS            (0x80)
-#define OB_7816_DYNAUTH_CHALLENGE          (0x81)
-#define OB_7816_DYNAUTH_RESPONSE           (0x82)
-

@@ -18,7 +18,8 @@ clean:
 	rm -f core *.o ${PROGS}
 
 package:
-	echo no package set-up available
+	mkdir -p ../opt/tester/bin
+	cp ${PROGS} ../opt/tester/bin
 
 obtest-challenge:	Makefile obtest-challenge.o ob-genauth.o
 	${LINK} -o obtest-challenge obtest-challenge.o ob-genauth.o ${LDFLAGS}

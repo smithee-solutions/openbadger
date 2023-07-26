@@ -219,11 +219,13 @@ fprintf(stderr, "7816 cmd %X rsp %X\n", msg_7816_lth, response_7816_lth);
   LONG status_pcsc;
   unsigned char get_next [] = {0x00, 0xc0, 0x00, 0x00, 0x00};
   rdrctx = ctx->rdrctx;
+
+
   scard_response_length = sizeof(response_7816);
   fprintf (stderr, "---7816 command (get next data)\n");
   ob_dump_buffer (ctx, get_next, sizeof(get_next), 0);
   status_pcsc = SCardTransmit(rdrctx->pcsc, &(rdrctx->pioSendPci), get_next, sizeof(get_next), NULL, response_7816, &scard_response_length);
-    fprintf (stderr, "7816 response 3\n");
+  fprintf (stderr, "7816 response 3 status_pcsc %lx\n", status_pcsc);
     ob_dump_buffer (ctx, response_7816, scard_response_length, 0);
 fprintf(stderr, "assuming response ok...%02X%02x %d.\n", response_7816[0], response_7816[1], response_7816_lth);
 

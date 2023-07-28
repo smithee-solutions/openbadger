@@ -85,6 +85,7 @@ typedef struct ob_context
   FILE *current_file;
   int pacs_data_format;
   FILE *der_out;
+  char *payload_file;
 
   // for PCSC reader control
   int reader_index;
@@ -129,6 +130,7 @@ int ob_initialize(OB_CONTEXT **initiaized_context, char *settings_filename);
 int ob_init_smartcard(OB_CONTEXT *ctx);
 char *ob_buffer_dump_string(OB_CONTEXT *ctx, unsigned char *buffer, int buffer_size, char *tag);
 void ob_dump_buffer(OB_CONTEXT *ctx, unsigned char *bytes, int length, int dest);
+int ob_read_settings(OB_CONTEXT *ctx);
 unsigned char *string_buffer_hex(OB_CONTEXT *ctx, const char *buf, int *buf_lth);
 char *string_hex_buffer(OB_CONTEXT *ctx, unsigned char *buf, int buf_lth);
 

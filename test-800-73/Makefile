@@ -8,7 +8,7 @@ CC=clang
 # PCSC is included because their own includes get it wrong
 CFLAGS=-c -g -I/usr/include/PCSC -I../include -Wall -Werror
 LINK=clang
-LDFLAGS=-g ../opt/tester/lib/libopenbadger.a  -lpcsclite 
+LDFLAGS=-g ../opt/tester/lib/libopenbadger.a -ljansson -lpcsclite 
 
 all:	${PROGS}
 	mkdir -p ../opt/tester/bin

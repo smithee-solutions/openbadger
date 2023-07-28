@@ -1,5 +1,5 @@
 /*
-  openpkoc - general authenticate (7816) functions
+  openbadger - general authenticate (7816) functions
 
   (C)Copyright 2023 Smithee Solutions LLC
 

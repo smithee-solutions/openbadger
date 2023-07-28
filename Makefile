@@ -20,13 +20,13 @@ all:
 	(cd common; make);
 	(cd test-800-73; make);
 	(cd test-an10957; make);
-	(cd decode-tools; make);
+	(cd format-tools; make);
 
 clean:
 	(cd common; make clean);
 	(cd test-800-73; make clean);
 	(cd test-an10957; make clean);
-	(cd decode-tools; make clean);
+	(cd format-tools; make clean);
 	(cd package; make clean)
 	rm -rf opt *deb
 

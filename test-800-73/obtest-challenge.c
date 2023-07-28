@@ -71,11 +71,13 @@ int main
   ctx = &test_piv_context;
   memset(ctx, 0, sizeof(*ctx));
   ctx->rdrctx = &pcsc_reader_context;
-  rdrctx = ctx->rdrctx;
-  smartcard_select_command_length = 0;
   ctx->test_case = OB_TEST_PIV;
   ctx->apdu_payload_max_7816 = OB_7816_APDU_PAYLOAD_MAX;
-ctx->verbosity = 9;
+  ctx->payload_file = malloc(1024);
+  status = ob_read_settings(ctx);
+
+  rdrctx = ctx->rdrctx;
+  smartcard_select_command_length = 0;
   if (argc > 1)
   {
     int i;
@@ -92,14 +94,7 @@ ctx->verbosity = 9;
       {
         if (*argv [3] != '-')
         {
-          challenge_message_file = fopen(argv [3], "r");
-          if (challenge_message_file != NULL)
-          {
-            fread(ctx->challenge_message, sizeof(challenge_message [0]), sizeof(ctx->challenge_message), challenge_message_file);
-            fprintf(stderr, "Reading challenge from file %s\n", argv [3]);
-          }
-          else
-            fprintf(stderr, "Cannot read challenge file %s\n", argv [3]);
+          strcpy(ctx->payload_file, argv [3]);
         }
         else
         {
@@ -135,23 +130,28 @@ unsigned char encrypted_payload [] = {
       };
     };
   };
+
+  if (ctx->payload_file)
+  {
+    challenge_message_file = fopen(ctx->payload_file, "r");
+    if (challenge_message_file != NULL)
+    {
+      fread(ctx->challenge_message, sizeof(challenge_message [0]), sizeof(ctx->challenge_message), challenge_message_file);
+      fprintf(stderr, "Reading challenge from file %s\n", argv [3]);
+    }
+    else
+      fprintf(stderr, "Cannot read challenge file %s\n", argv [3]);
+  };
+
   fprintf(stderr, "test-piv-challenge %s\n", OPENBADGER_VERSION);
   fprintf(stderr, "APDU Payload max: %d.\n", ctx->apdu_payload_max_7816);
 
   status = ob_init_smartcard(ctx);
 
-  /*
-    either use test vectors (specific to this test) or do the actual thing.
-    there are multiple tests in openbadger see openbadger-local.h for the list.
-  */
-
   if (status EQUALS ST_OK)
   {
     switch(ctx->test_case)
     {
-    case OB_TEST_VECTORS:
-      fprintf(stderr, "Test vectors in use, no command sent.\n");
-      break;
     case OB_TEST_PIV:
       memcpy(smartcard_select_command, op_test_piv, sizeof(op_test_piv));
       smartcard_select_command_length = sizeof(op_test_piv);

@@ -1,0 +1,6 @@
+#!/bin/bash
+set -x
+KEY_PAIR_NAME=offload-sample-2_keypair
+echo create RSA key pair
+openssl genrsa -out ${KEY_PAIR_NAME}.der 2048
+

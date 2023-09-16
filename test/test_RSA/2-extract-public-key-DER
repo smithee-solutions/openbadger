@@ -1,0 +1,7 @@
+#!/bin/bash
+set -x
+PUBLIC_KEY=offload-sample-2_pubkey
+KEY_PAIR_NAME=offload-sample-2_keypair
+echo extract RSA public key DER
+openssl rsa -in ${KEY_PAIR_NAME}.der -outform DER -pubout -RSAPublicKey_out -out ${PUBLIC_KEY}.der
+

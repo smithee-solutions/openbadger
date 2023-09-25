@@ -8,6 +8,7 @@ int main
 
 { /* main for obtest-desfire-format */
 
+<<<<<<< HEAD
 // select master application
   blah blah mifare_desfire_select_application(tag, NULL);
 
@@ -20,6 +21,8 @@ int main
   blah blah mifare_desfire_foramt_picc(tag);
 
 
+=======
+>>>>>>> 2dfcdc849dbed69981c15c610e6cbbd63756f25e
   return(-1);
 
 } /* main for obtest-desfire-format */

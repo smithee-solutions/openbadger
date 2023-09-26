@@ -33,6 +33,8 @@ clean:
 
 package:	all
 	mkdir -p ../opt/tester/bin
+	mkdir -p ../opt/tester/doc
+	pandoc --toc -o ../opt/tester/doc/USAGE-obtest-an10957.pdf USAGE-obtest-an10957.md
 	cp ${PROGS} ../opt/tester/bin
 
 divutil:	divutil.o ob-crypto.o ob-diversify.o ob-init.o ob-keys.o ob-util.o Makefile

@@ -21,12 +21,14 @@ all:
 	(cd test-800-73; make);
 	(cd test-an10957; make);
 	(cd format-tools; make);
+	(cd documentation; make);
 
 clean:
 	(cd common; make clean);
 	(cd test-800-73; make clean);
 	(cd test-an10957; make clean);
 	(cd format-tools; make clean);
+	(cd documentation; make clean);
 	(cd package; make clean)
 	rm -rf opt *deb
 
@@ -37,5 +39,6 @@ package:	all
 	cp include/ob-pcsc.h opt/tester/include
 	cp include/openbadger-common.h opt/tester/include
 	cp include/openbadger-version.h opt/tester/include
+	(cd documentation; make package)
 	(cd package; make package)
 

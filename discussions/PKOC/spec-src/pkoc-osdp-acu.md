@@ -4,13 +4,16 @@ include-before:
 header-includes: |
   \usepackage{fancyhdr}
   \pagestyle{fancy}
-  \fancyfoot[CO,CE]{OSDP ACU PKOC Card Processing 1.30}
+  \fancyfoot[CO,CE]{OSDP ACU PKOC Card Processing 1.31}
   \fancyfoot[LE,RO]{\thepage}
 include-before:
 - '`\newpage{}`{=latex}'
+...
+
+
 ---
 
-Version 1.30
+Version 1.31
 
 \newpage{}
 
@@ -100,7 +103,7 @@ traffic.
 - ACU sends OSDP_AUTH_REQUEST.  Some fields may be omitted due to pre-processing
 or PD-side values being provided.
 - PD sends Authentication Request to card
-- card provides Authentication Response [1]
+- card provides Authentication Response [pkoc]
 - PD sends osdp_MFGREP("OSDP_AUTH_RESPONSE") in response to osdp_POLL
 - ACU processes the Authentication Response, including necessary EC crypto operations.
 - ACU extracts cardholder number from osdp_AUTH_RESPONSE and proceeds with access control
@@ -182,8 +185,8 @@ Auth Request
 
 \newpage{}
 
-PD Use of Transaction ID
-------------------------
+Transaction ID in PD
+---------------------
 
 The PD needs the transaction id to perform the Authentication Request.  This
 value can be provided by the PD, or provided by the ACU in response to an osdp_PKOC_CARD_PRESENT response, or provided in advance of a card reader
@@ -192,8 +195,8 @@ transaction id by using the osdp_PKOC_TRANSACTION_REFRESH response.
 A sequence number may also be provided with the transaction ID.  This is useful for case where the ACU
 is periodically sending transaction identifiers and there is a need to know which one the PD is using.
 
-PKOC Manufacturer-specific OSDP commands
-========================================
+Manufacturer-specific commands
+==============================
 
 To implement these operations OSDP's manufacturer-specific command
 mechanism is used.  Six commands are defined.  At this time individual vendors
@@ -497,7 +500,7 @@ Document source is in github.
 
 PKOC as used here refers to the card format specificed by PSIA.
 
-This is version 1.30 of this document.
+This is version 1.31 of this document.
 
 This document originated by Rodney Thayer (Smithee Solutions),
 Mike Zercher (Secure Element Solutions),
@@ -526,7 +529,7 @@ a PD that connects over TCP/IP.
 References
 ----------
 
-[1] PKOC NFC Card Specification, Version 1.0 Rev0, 6/13/2023.  Physical Security Interoperability Alliance.
+[pkoc] PKOC NFC Card Specification, Version 1.0 Rev0, 6/13/2023.  Physical Security Interoperability Alliance.
 
 [2] Integrated Engineering OSDP extensions, document 100-01G-PS-01-INID "Vendor Specific OSDP Extensions v10c".
 
@@ -540,5 +543,6 @@ References
 1.23 - shared at GSX 2023
 1.24 - fixed typo's in 1.23
 1.30 - added transaction id sequence number, sorted messages, corrected "blah" typo.
+1.31 - minor formatting changes
 ```
 

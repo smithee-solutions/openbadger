@@ -525,6 +525,14 @@ osdp_PKOC_AUTH_REQUEST.  It is recommended you use a chain with a minimal number
 of PD's (preferrably only one) and/or a higher line speed (38,400) and/or use
 a PD that connects over TCP/IP.
 
+Assigned Numbers
+----------------
+
+This specification assumes certain numbers will be registered.
+
+OUI value (3-byte) - to be registerered with IEEE by (PSIA?.)
+
+Tags FC, FD, FE to be registered in the tag space for PKOC.
 
 References
 ----------

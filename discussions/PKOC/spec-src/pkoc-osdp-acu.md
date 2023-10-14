@@ -408,6 +408,8 @@ It can optionally include a transaction sequence value, so that the ACU can main
 Note is expected the osdp_PKOC_AUTH_REQUEST command will be sent soon after the osdp_PKOC_CARD_PRESENT response is received by the ACU, but not necessarily as the next command.
 In general the next command after osdp_PKOC_CARD_PRESENt is expected to be a poll.
 
+Note this has no multipart header as the response will never exceed the minimum OSDP packet size.
+
 MFGREP payload
 --------------
 
@@ -420,19 +422,7 @@ Contents of the osdp_MFGREP payload:
 |        |                             |
 |   3    | 0xE0 (Mfg Response Code) |
 |        |                                                       |
-|   4    | Total response payload size (Least Significant Octet) |
-|        |                                                       |
-|   5    | Total response payload size (Most Significant Octet)  |
-|        |                                                       |
-|   6    | Offset in response (Least Significant Octet)          |
-|        |                                                       |
-|   7    | Offset in response (Most Significant Octet)           |
-|        |                                                       |
-|   8    | Response length (Least Significant Octet)             |
-|        |                                                       |
-|   9    | Response length (Most Significant Octet)              |
-|        |                                                       |
-|  10    | Supported Protocol Versions TLV                       |
+|   4    | Supported Protocol Versions TLV                       |
 |        | Transaction Sequence TLV (optional)                   |
 |        | Error TLV (optional)                                  |
 
@@ -551,6 +541,6 @@ References
 1.23 - shared at GSX 2023
 1.24 - fixed typo's in 1.23
 1.30 - added transaction id sequence number, sorted messages, corrected "blah" typo.
-1.31 - minor formatting changes
+1.31 - minor formatting changes, removed multi-part header from osdp_PKOC_CARD_PRESENT response
 ```
 

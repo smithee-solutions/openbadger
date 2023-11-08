@@ -470,10 +470,19 @@ Contents of the osdp_MFGREP payload:
 |        |                             |
 |   3    | 0xE0 (Mfg Response Code) |
 |        |                                                       |
-|   4-n  | Tag 0xFC - Card Present Payload, contains: |
+|   4-n  | Tag 0xFC, Length of whole payload - Card Present Payload, contains: |
 |        |   Supported Protocol Versions TLV                       |
 |        |   Transaction Sequence TLV (optional)                   |
 |        |   Error TLV (optional)                                  |
+
+### Example ###
+
+```
+  0A0017E0FC065C0201004C00
+```
+
+meaning OUI 0A0017, osdp_PKOC_CARD_PRESENT (0xE0), payload FC with length 6, Supported Protocol 0100, Transaction sequence empty (meaning not provided by PD)
+
 
 \newpage{}
 

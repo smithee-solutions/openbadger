@@ -16,17 +16,22 @@
 
 # make file for openbadger
 
+# all does not include
+# (cd test-AN10957; make);
+
+# clean does not include
+# (cd test-AN10957; make clean);
+
+
 all:
 	(cd common; make);
 	(cd test-800-73; make);
-	(cd test-AN10957; make);
 	(cd format-tools; make);
 	(cd documentation; make);
 
 clean:
 	(cd common; make clean);
 	(cd test-800-73; make clean);
-	(cd test-AN10957; make clean);
 	(cd format-tools; make clean);
 	(cd documentation; make clean);
 	(cd package; make clean)

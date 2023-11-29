@@ -177,6 +177,12 @@ Message Flow
 EAC ACU     PD    CARD
 --- ---    ---    ----
  |   |      |      |
+EAC initiates OSDP communications
+ |   |      |      |
+      ----->
+      osdp_ACURXSIZE
+      ----->
+      osdp_KEEPACTIVE
  |   |      |      |
              <-----
              card is presented
@@ -206,6 +212,8 @@ Auth Request
       <-----
       Auth Response
  |   |      |      |
+      ----->
+      osdp_KEEPACTIVE
  |   |      |      |
   <--
   Card data

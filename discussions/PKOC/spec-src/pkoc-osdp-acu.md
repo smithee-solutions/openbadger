@@ -86,7 +86,7 @@ Several new tags are introduced, see table 1.  Error response codes are listed i
 |            |         |
 | 0x00     | No error |
 |            |         |
-| 0x01     | ISO 7816 status (SW1/SW2.) |
+| 0x01     | ISO 7816 status (two bytes follow, SW1/SW2) |
 |            |         |
 | 0x02     | Timeout accessing card. |
 |            |         |
@@ -109,7 +109,7 @@ Several new tags are introduced, see table 1.  Error response codes are listed i
 | 0x80-0xFF | Reserved for private use. |
 |            |         |
 
-Length varies with code.  Details may or may not be present, variable size.
+Note one code, 0x01, has two bytes of detail.  Other defined error codes have no detail bytes.
 
 \newpage{}
 
@@ -424,7 +424,7 @@ Note this has no multipart header as the response will never exceed the minimum 
 |        |                                                      |
 |      3 | 0xFE (Mfg Response Code)                             |
 |        |                                                      |
-|    4-n | Error TLV (see above for description.)               |
+|    4-n | Error bytes (see table 2, note no TLV)               |
 
 \newpage{}
 

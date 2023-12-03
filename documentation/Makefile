@@ -1,4 +1,4 @@
-DOCS=testing-challenge-response.pdf
+DOCS=testing-challenge-response.pdf USAGE-obtest-pkoc.pdf
 
 all:	${DOCS}
 
@@ -11,4 +11,7 @@ package:	all
 
 testing-challenge-response.pdf:	testing-challenge-response.md
 	pandoc --toc -o testing-challenge-response.pdf testing-challenge-response.md
+
+USAGE-obtest-pkoc.pdf:	USAGE-obtest-pkoc.md
+	pandoc --toc -o USAGE-obtest-pkoc.pdf USAGE-obtest-pkoc.md
 

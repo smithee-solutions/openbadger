@@ -114,9 +114,9 @@ typedef struct ob_context
   unsigned char ec_public_key [65];
   unsigned char pkoc_signature [64];
 
-  void *an10957_ctx;
-
-  void *pkoc_ctx;
+  //void *an10957_ctx;
+  void *credential_context;
+//pkoc_ctx;
 } OB_CONTEXT;
 
 int aes_encrypt(OB_CONTEXT *ctx, unsigned char *plaintext, unsigned char *ciphertext, unsigned char *key, int *length);

@@ -16,5 +16,5 @@
   limitations under the License.
 */
 
-#define OPENBADGER_VERSION "1.50"
+#define OPENBADGER_VERSION "1.51"
 

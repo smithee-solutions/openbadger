@@ -17,7 +17,7 @@ char* base64_encode(char* plain, int in_count) {
 
     char counts = 0;
     char buffer[3];
-    char* cipher = malloc(strlen(plain) * 4 / 3 + 4);
+    char* cipher = malloc(in_count * 4 / 3 + 4);
     int i = 0, c = 0;
 
     for(i = 0; i < in_count; i++) {

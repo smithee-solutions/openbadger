@@ -327,12 +327,14 @@ fprintf(stderr, "DEBUG: settings?\n");
       use openssl to perform an ECDSA signature verification operation.
     */
 
-    sprintf(verify_command, "openssl version;openssl dgst -sha256 -verify %s -signature ec-sig.der tbs-pkoc.bin", OBTEST_PKOC_PUBLIC_KEY);
+    sprintf(verify_command, "openssl version 2>/tmp/openssl_stderr.log >/tmp/openssl.log;openssl dgst -sha256 -verify %s -signature ec-sig.der tbs-pkoc.bin 2>>/tmp/openssl_stderr.log >>/tmp/openssl.log", OBTEST_PKOC_PUBLIC_KEY);
     if (ctx->verbosity > 3)
       fprintf(stderr, "verify command: %s\n", verify_command);
     if (ctx->verbosity > 0)
       fprintf(stderr, "Checking signature with openssl\n");
     system(verify_command);
+    if (ctx->verbosity > 3)
+      fprintf(stderr, "check /tmp/openssl...log\n");
   };
 
   if (status EQUALS ST_OK)
@@ -357,6 +359,9 @@ fprintf(stderr, "DEBUG: settings?\n");
   {
     if (ctx->output_format EQUALS OB_FORMAT_OSDP_RAW)
     {
+      if (ctx->verbosity > 3)
+        fprintf(stderr, "Output format is OSDP osdp_RAW via libosdp-conformance\n");
+
       sprintf(osdp_command, "{\"command\":\"present-card\",\"format\":\"raw\",\"bits\":\"%d\",\"raw\":\"", ctx->bits_to_return);
 
       for (i=0; i<return_size; i++)
@@ -368,12 +373,13 @@ fprintf(stderr, "DEBUG: settings?\n");
       if (ctx->verbosity > 3)
         fprintf(stderr, "OSDP Response will be:\n%s\n", osdp_command);
 
-
       if (ctx->verbosity > 0)
         fprintf(stderr, "Issuing OSDP PD response.\n");
       resp = fopen("pkoc-read.json", "w");
       fprintf(resp, "%s", osdp_command);
       fclose(resp);
+      if (ctx->verbosity > 3)
+        fprintf(stderr, "submitting present-card command to libosdp-conformance\n");
       sprintf(command, "/opt/osdp-conformance/bin/open-osdp-kick PD <pkoc-read.json");
       system(command);
     };
@@ -383,6 +389,9 @@ fprintf(stderr, "DEBUG: settings?\n");
   {
     if (ctx->output_format EQUALS OB_FORMAT_BASE64)
     {
+      if (ctx->verbosity > 3)
+        fprintf(stderr, "Output format is Base-64 DER of entire Public Key\n");
+
       strcpy(encoded, base64_encode((char *)pubkey_der, pubkey_der_length));
       if (ctx->verbosity > 3)
         fprintf(stderr, "encoded string is %s\n", encoded);

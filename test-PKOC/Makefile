@@ -24,14 +24,11 @@ CFLAGS=-c -g -I. -I../include -I ../common/Base64 -I /opt/tester/include -I/usr/
 LDFLAGS=-L${BUILD_DIR}/lib -lopenbadger -ljansson -lpcsclite
 
 all:	${PROGS}
+	mkdir -p ../opt/tester/bin
+	cp ${PROGS} ../opt/tester/bin
 
 clean:
 	rm -rvf ${PROGS} core *.o
-
-package:	all
-	mkdir -p ../opt/tester/bin
-	mkdir -p ../opt/tester/doc
-	cp ${PROGS} ../opt/tester/bin
 
 obtest-pkoc:	Makefile obtest-pkoc.o ob-pkoc.o ../opt/tester/lib/base64.o ../opt/tester/lib/libopenbadger.a
 	${LINK} -o obtest-pkoc obtest-pkoc.o ob-pkoc.o ../opt/tester/lib/base64.o ${LDFLAGS}

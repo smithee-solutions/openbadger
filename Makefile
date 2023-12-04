@@ -40,6 +40,7 @@ clean:
 	rm -rf opt *deb
 
 package:	all
+	(cd test-PKOC; make package);
 	mkdir -p opt/tester/include
 	cp include/ob-7816.h opt/tester/include
 	cp include/ob-crypto.h opt/tester/include

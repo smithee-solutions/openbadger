@@ -26,12 +26,14 @@
 all:
 	(cd common; make);
 	(cd test-800-73; make);
+	(cd test-PKOC; make);
 	(cd format-tools; make);
 	(cd documentation; make);
 
 clean:
 	(cd common; make clean);
 	(cd test-800-73; make clean);
+	(cd test-PKOC; make clean);
 	(cd format-tools; make clean);
 	(cd documentation; make clean);
 	(cd package; make clean)

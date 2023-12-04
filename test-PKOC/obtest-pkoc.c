@@ -29,6 +29,8 @@
 #include <PCSC/pcsclite.h>
 #include <PCSC/winscard.h>
 
+#include <base64.h>
+
 
 #include <ob-crypto.h>
 #include <ob-7816.h>
@@ -36,7 +38,7 @@
 #include <ob-pcsc.h>
 #include <ob-pkoc.h>
 #include <openbadger-version.h>
-int ob_initialize_pubkey_DER(OB_CONTEXT *ctx, unsigned char *key_buffer, int kblth);
+int ob_initialize_pubkey_DER(OB_CONTEXT *ctx, unsigned char *key_buffer, int kblth, unsigned char *marshalled_DER, int *marshalled_length);
 int ob_initialize_signature_DER(OB_CONTEXT *ctx, unsigned char *part_1, int p1lth, unsigned char *part_2, int p2lth);
 
 // skeletons of DER structures
@@ -66,8 +68,11 @@ int main
 
 { /* main for obtest-pkoc */
 
+  char command [1024];
   OB_CONTEXT *ctx;
   DWORD dwRecvLength;
+  char encoded [1024];
+  int i;
   int index_lc;
   unsigned char msg_cla;
   unsigned char msg_ins;
@@ -75,11 +80,18 @@ int main
   unsigned char msg_p2;
   unsigned char msg_lc;
   unsigned char msg_le;
+  char octet_string [3];
+  char osdp_command [2048];
   BYTE pbRecvBuffer [2*OB_7816_APDU_PAYLOAD_MAX];
   OB_RDRCTX pcsc_reader_context;
   OB_RDRCTX *rdrctx;
   OB_CONTEXT test_pkoc_context;
   OB_PKOC_CONTEXT pkoc_context;
+  unsigned char pubkey_der [8192];
+  int pubkey_der_length;
+  unsigned char raw_key [64];
+  FILE *resp;
+  int return_size;
   unsigned char smartcard_command [OB_7816_BUFFER_MAX];
   int smartcard_command_length;
   int status;
@@ -92,6 +104,7 @@ int main
   ctx->test_case = OB_TEST_PKOC;
   ctx->rdrctx = &pcsc_reader_context;
   ctx->credential_context = &pkoc_context;
+  ctx->output_format = OB_FORMAT_OSDP_RAW;
 
   status = ob_read_settings(ctx);
 fprintf(stderr, "DEBUG: settings?\n");
@@ -287,7 +300,8 @@ fprintf(stderr, "DEBUG: settings?\n");
     ob_dump_buffer (ctx, ctx->pkoc_signature, 64, 0);
 
     // output a DER-formatted copy of the public key.
-    status = ob_initialize_pubkey_DER(ctx, ctx->ec_public_key, OB_PKOC_PUBKEY_LENGTH);
+    pubkey_der_length = sizeof(pubkey_der);
+    status = ob_initialize_pubkey_DER(ctx, ctx->ec_public_key, OB_PKOC_PUBKEY_LENGTH, pubkey_der, &pubkey_der_length);
     if (status EQUALS ST_OK)
       fprintf(stderr, "file %s created\n", OBTEST_PKOC_PUBLIC_KEY);
   };
@@ -323,13 +337,6 @@ fprintf(stderr, "DEBUG: settings?\n");
 
   if (status EQUALS ST_OK)
   {
-    char command [1024];
-    int i;
-    char octet_string [3];
-    char osdp_command [2048];
-    unsigned char raw_key [64];
-    FILE *resp;
-    int return_size;
 
     fprintf(stderr, "Public Key Open Credential:\n");
     memset(raw_key, 0, sizeof(raw_key));
@@ -342,26 +349,45 @@ fprintf(stderr, "DEBUG: settings?\n");
     {
       memcpy(raw_key, ctx->ec_public_key, sizeof(raw_key));
       return_size = 64;
-    }
-
-    ob_dump_buffer (ctx, raw_key, sizeof(raw_key), 0);
-    sprintf(osdp_command, "{\"command\":\"present-card\",\"format\":\"raw\",\"bits\":\"%d\",\"raw\":\"", ctx->bits_to_return);
-
-    for (i=0; i<return_size; i++)
-    {
-      sprintf(octet_string, "%02X", raw_key [i]);
-      strcat(osdp_command, octet_string);
     };
-    strcat(osdp_command, "\"}");
     if (ctx->verbosity > 3)
-      fprintf(stderr, "OSDP Response will be:\n%s\n", osdp_command);
-    if (ctx->verbosity > 0)
-      fprintf(stderr, "Issuing OSDP PD response.\n");
-    resp = fopen("pkoc-read.json", "w");
-    fprintf(resp, "%s", osdp_command);
-    fclose(resp);
-    sprintf(command, "/opt/osdp-conformance/bin/open-osdp-kick PD <pkoc-read.json");
-    system(command);
+      ob_dump_buffer (ctx, raw_key, sizeof(raw_key), 0);
+  };
+  if (status EQUALS ST_OK)
+  {
+    if (ctx->output_format EQUALS OB_FORMAT_OSDP_RAW)
+    {
+      sprintf(osdp_command, "{\"command\":\"present-card\",\"format\":\"raw\",\"bits\":\"%d\",\"raw\":\"", ctx->bits_to_return);
+
+      for (i=0; i<return_size; i++)
+      {
+        sprintf(octet_string, "%02X", raw_key [i]);
+        strcat(osdp_command, octet_string);
+      };
+      strcat(osdp_command, "\"}");
+      if (ctx->verbosity > 3)
+        fprintf(stderr, "OSDP Response will be:\n%s\n", osdp_command);
+
+
+      if (ctx->verbosity > 0)
+        fprintf(stderr, "Issuing OSDP PD response.\n");
+      resp = fopen("pkoc-read.json", "w");
+      fprintf(resp, "%s", osdp_command);
+      fclose(resp);
+      sprintf(command, "/opt/osdp-conformance/bin/open-osdp-kick PD <pkoc-read.json");
+      system(command);
+    };
+  };
+
+  if (status EQUALS ST_OK)
+  {
+    if (ctx->output_format EQUALS OB_FORMAT_BASE64)
+    {
+      strcpy(encoded, base64_encode((char *)pubkey_der, pubkey_der_length));
+      if (ctx->verbosity > 3)
+        fprintf(stderr, "encoded string is %s\n", encoded);
+      printf("%s\n", encoded);
+    }
   };
 
   if (status != ST_OK)
@@ -375,7 +401,9 @@ fprintf(stderr, "DEBUG: settings?\n");
 int ob_initialize_pubkey_DER
   (OB_CONTEXT *ctx,
   unsigned char *key_buffer,
-  int kblth)
+  int kblth,
+  unsigned char *marshalled_DER,
+  int *marshalled_length)
 
 { /* ob_intiialize_pubkey_DER */
 
@@ -384,8 +412,12 @@ int ob_initialize_pubkey_DER
 
   ec_der_key = fopen(OBTEST_PKOC_PUBLIC_KEY, "w");
   fwrite(ec_public_key_der_skeleton, 1, sizeof(ec_public_key_der_skeleton), ec_der_key);
+  memcpy(marshalled_DER, ec_public_key_der_skeleton, sizeof(ec_public_key_der_skeleton));
   fwrite(key_buffer, 1, kblth, ec_der_key);
+  memcpy(marshalled_DER+sizeof(ec_public_key_der_skeleton), key_buffer, kblth);
   fclose(ec_der_key);
+  *marshalled_length = sizeof(ec_public_key_der_skeleton) + kblth;
+
   return(ST_OK);
 
 } /* ob_intiialize_pubkey_DER */
@@ -447,23 +479,4 @@ int ob_initialize_signature_DER
 
 } /* ob_initialize_signature_DER */
 
-
-#if 0
-//#define XTN_IDENT_SPEC
-#define XTN_IDENT_TEST
-unsigned char spec_identifier [] = {
-  0x6f, 0xcf, 0x50, 0x12,  0xb2, 0x24, 0x04, 0x3b,
-  0x09, 0x35, 0x0a, 0x4f,  0xc5, 0xe5, 0x6a, 0x8f
-};
-
-
-int ob_read_settings(OB_CONTEXT *ctx);
-
-
-
-
-
-
-
-#endif
 

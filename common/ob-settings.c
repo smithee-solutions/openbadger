@@ -17,6 +17,7 @@
   parameters:
     bits - number of bits to output. Must be 512 or 128 
     control - path of libosdp-conformance PD control socket.  default is /opt/osdp-conformance/PD/open-osdp-control
+    format - output format
     payload-file - file containing data for operation
     reader - smartcard reader index.  starts at zero.  default is zero.
     verbosity - message detail level.  default is 3, debug is 9, silent is 0
@@ -67,6 +68,14 @@ int ob_read_settings
     if (json_is_string (value))
     {
       strcpy(ctx->pd_control, json_string_value(value));
+    };
+    value = json_object_get(root, "format");
+    if (json_is_string(value))
+    {
+      if (0 EQUALS strcmp(json_string_value(value), "base64"))
+        ctx->output_format = OB_FORMAT_BASE64;
+      if (0 EQUALS strcmp(json_string_value(value), "osdp-raw"))
+        ctx->output_format = OB_FORMAT_OSDP_RAW;
     };
     value = json_object_get (root, "payload-file");
     if (json_is_string (value))

@@ -20,7 +20,7 @@ CC=clang
 LINK=clang
 BUILD_DIR=../opt/tester
 # PCSC is included because their own includes get it wrong
-CFLAGS=-c -g -I. -I../include -I /opt/tester/include -I/usr/include/PCSC -Wall -Werror
+CFLAGS=-c -g -I. -I../include -I ../common/Base64 -I /opt/tester/include -I/usr/include/PCSC -Wall -Werror
 LDFLAGS=-L${BUILD_DIR}/lib -lopenbadger -ljansson -lpcsclite
 
 all:	${PROGS}
@@ -33,8 +33,8 @@ package:	all
 	mkdir -p ../opt/tester/doc
 	cp ${PROGS} ../opt/tester/bin
 
-obtest-pkoc:	Makefile obtest-pkoc.o ob-pkoc.o ../opt/tester/lib/libopenbadger.a
-	${LINK} -o obtest-pkoc obtest-pkoc.o ob-pkoc.o ${LDFLAGS}
+obtest-pkoc:	Makefile obtest-pkoc.o ob-pkoc.o ../opt/tester/lib/base64.o ../opt/tester/lib/libopenbadger.a
+	${LINK} -o obtest-pkoc obtest-pkoc.o ob-pkoc.o ../opt/tester/lib/base64.o ${LDFLAGS}
 
 pkoc-pd:	pkoc-pd.o Makefile
 	${LINK} -o pkoc-pd pkoc-pd.o ${LDFLAGS}

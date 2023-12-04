@@ -1,0 +1,2 @@
+This is a copy of github elzoughby/Base64 with a count argument added.
+

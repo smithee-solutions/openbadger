@@ -30,8 +30,11 @@
 #define OB_FORMAT_AN10957  (2)
 #define OB_FORMAT_LEAF     (3)
 #define OB_FORMAT_Pzz1     (4)
-#define OB_FORMAT_Pzz2     (5)
-#define OB_FORMAT_PRIVATE  (255)
+#define OB_FORMAT_Pzz2      ( 5)
+#define OB_FORMAT_PRIVATE   (255)
+#define OB_FORMAT_OSDP_RAW  ( 6)
+#define OB_FORMAT_BASE64    ( 7)
+
 
 // test cases exercised (across all tests)
 #define OB_TEST_VECTORS (0)
@@ -114,9 +117,10 @@ typedef struct ob_context
   unsigned char ec_public_key [65];
   unsigned char pkoc_signature [64];
 
-  //void *an10957_ctx;
+  // format details
+  int output_format;
+
   void *credential_context;
-//pkoc_ctx;
 } OB_CONTEXT;
 
 int aes_encrypt(OB_CONTEXT *ctx, unsigned char *plaintext, unsigned char *ciphertext, unsigned char *key, int *length);

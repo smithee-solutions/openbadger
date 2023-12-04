@@ -7,9 +7,11 @@ CC=clang
 CFLAGS=-c -g -I/usr/include/PCSC -I../include -Wall -Werror
 
 all:	libopenbadger.a
+	(cd Base64; make)
 
 clean:
 	rm -f core *.o *.a
+	(cd Base64; make clean)
 
 libopenbadger.a:	ob-settings.o ob-utils.o
 	ar r libopenbadger.a ob-settings.o ob-utils.o

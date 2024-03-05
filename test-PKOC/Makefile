@@ -1,6 +1,6 @@
 # make PKOC test tools, examples, and OSDP test harness
 
-#  Copyright 2023 Smithee Solutions LLC
+#  Copyright 2023-2024 Smithee Solutions LLC
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -24,6 +24,8 @@ CFLAGS=-c -g -I. -I../include -I ../common/Base64 -I /opt/tester/include -I/usr/
 LDFLAGS=-L${BUILD_DIR}/lib -lopenbadger -ljansson -lpcsclite
 
 all:	${PROGS}
+
+package:	${PROGS}
 	mkdir -p ../opt/tester/bin
 	cp ${PROGS} ../opt/tester/bin
 

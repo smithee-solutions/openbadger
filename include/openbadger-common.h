@@ -1,7 +1,7 @@
 /*
   openbadger - common definitions
 
-  (C)Copyright 2023 Smithee Solutions LLC
+  (C)Copyright 2023-2024 Smithee Solutions LLC
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -77,6 +77,7 @@
 #define STOB_PIV_GETCERT       (  14)
 #define STOB_GETCERT_FRAGMENT  (  15)
 #define STOB_INIT_FILES        (  16)
+#define STOB_FIRST_DESFIRE     ( 100)
 
 typedef struct ob_context
 {

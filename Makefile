@@ -24,16 +24,20 @@
 
 
 all:
+	(cd lib; make)
 	(cd common; make);
 	(cd test-800-73; make);
 	(cd test-PKOC; make);
+	(cd test-desfire; make);
 	(cd format-tools; make);
 	(cd documentation; make);
 
 clean:
+	(cd lib; make clean)
 	(cd common; make clean);
 	(cd test-800-73; make clean);
 	(cd test-PKOC; make clean);
+	(cd test-desfire; make clean);
 	(cd format-tools; make clean);
 	(cd documentation; make clean);
 	(cd package; make clean)

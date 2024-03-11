@@ -2,8 +2,6 @@
   (C)2023-2024 Smithee Solutions LLC
 */
 
-#define OBTEST_DESFIRE_VERSION "0.01"
-
 #define EQUALS ==
 
 #define OB_DESFIRE_PATH_SETTINGS "obtest-desfire-settings.json"

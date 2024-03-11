@@ -25,6 +25,7 @@
 #include <nfc/nfc.h>
 #include <freefare.h>
 
+#include <openbadger-version.h>
 #include <ob-crypto.h>
 #include <openbadger-common.h>
 #include <ob-desfire.h>
@@ -54,7 +55,7 @@ int main
   status = ST_OK;
   ctx = &obtest_context_desfire;
   memset((void *)ctx, 0, sizeof(*ctx));
-  fprintf(stderr, "OpenBadger Test: DESFire List Applications %s\n", OBTEST_DESFIRE_VERSION);
+  fprintf(stderr, "OpenBadger Test: DESFire List Applications %s\n", OPENBADGER_VERSION);
   strcpy(action_verb, "list-applications");
   if (ctx->verbosity > 0)
     fprintf(stderr, "obtest-desfire-%s initializing.\n", action_verb);

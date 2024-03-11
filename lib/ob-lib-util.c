@@ -1,7 +1,9 @@
 /*
-  ob-util - utility functions to support openbadger
+  ob-lib-util - library utility functions to support openbadger
 
-  (C)Copyright 2023 Smithee Solutions LLC
+... yes there is an ob-utils.c
+
+  (C)Copyright 2023-2024 Smithee Solutions LLC
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.

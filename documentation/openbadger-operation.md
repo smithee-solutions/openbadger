@@ -2,26 +2,17 @@
 title: openbadger operation
 ---
 
+\newpage {}
+
+# Introduction #
+
 Various (one for now) miscellaneous tools for credential a/k/a badging
 operations.
 
-# Operation #
+# openbadger operation #
 
-## Installation ##
-
-load the package
-
-```
-  dpkg -i blah.deb
-```
-
-## utilities ##
-
-### divutil ###
-
-divutil performs the calculations listed in AN10957 to perform key diversification.
-
-divutil uses the common settings file /opt/tester/etc/openbadger-settings.json.
+there are various tools.  run them individually.  they use one common
+and various other tool-specific settings files.  These files are in JSOn format.
 
 ## Settings ##
 
@@ -30,9 +21,34 @@ openbadger-settings.json contains the settings.  The default copy is
 in /opt/tester/etc/openbadger-settings.json
 
 ___verbosity___
-"3" for normal output, "9" for debug output.
+"0" for silent running, "3" for normal output, "9" for debug output.
 
-# Building OpenBadger #
+## Installation ##
+
+load the package
+
+```
+  dpkg -i openbadger_x.xx_arm64.deb
+```
+
+## Tools ##
+
+### divutil ###
+
+divutil performs the calculations listed in AN10957 to perform key diversification.
+
+divutil uses the common settings file /opt/tester/etc/openbadger-settings.json.
+
+# Building openbadger tools #
+
+## Required Components ##
+
+- various packages: libjansson-dev
+- build from source: tiny-AES-C, libnfc, libfreefare
+- to build test-crypto -> test-wolfssl, requires WolfSSL library
+- to build test-crypto -> test-cyclone, requires Cyclone SSL library
+
+## OpenBadger Package ##
 
 run make from the top level.
 
@@ -59,4 +75,29 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
+## B. Building subcomponents from source ##
+
+### B.1 Building with WolfSSL ###
+
+### B.2 Building with Cyclone ###
+
+### B.3 Building with libnfc and libfreefare ###
+
+### B.4 Building with tiny-AES-c ###
+
+```
+git clone https://github.com/kokke/tiny-AES-c
+cd tiny-AES-c
+make
+mkdir -p /opt/openbadger/lib
+cp aes.o /opt/openbadger/lib
+mkdir -p /opt/openbadger/include
+cp aes.h /opt/openbadger/include
+```
+
+# Punchlist #
+
+update divutil to use /opt/openbadger
+
+base64?
 

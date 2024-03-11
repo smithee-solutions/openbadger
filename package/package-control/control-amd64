@@ -1,5 +1,5 @@
 Package: openbadger
-Version: 1.51
+Version: 1.60
 Section: custom
 Priority: optional
 Architecture: amd64

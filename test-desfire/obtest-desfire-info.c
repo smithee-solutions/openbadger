@@ -12,6 +12,7 @@
 #include <nfc/nfc.h>
 #include <freefare.h>
 
+#include <openbadger-version.h>
 #include <ob-crypto.h>
 #include <openbadger-common.h>
 #include <ob-desfire.h>
@@ -33,7 +34,7 @@ int main
 
   ctx = &obtest_context_desfire;
   status = ob_desfire_load_settings(ctx);
-  fprintf(stderr, "OpenBadger Test: DESFire Info %s\n", OBTEST_DESFIRE_VERSION);
+  fprintf(stderr, "OpenBadger Test: DESFire Info %s\n", OPENBADGER_VERSION);
   status = ob_desfire_open(ctx);
   if (status EQUALS ST_OK)
   {

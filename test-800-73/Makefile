@@ -1,6 +1,6 @@
 # test-800-73 - testing of "PIV" cards
 
-# (C)2023 Smithee Solutions LLC
+# (C)2023-2024 Smithee Solutions LLC
 
 PROGS=obtest-challenge obtest-getcert 
 
@@ -8,7 +8,7 @@ CC=clang
 # PCSC is included because their own includes get it wrong
 CFLAGS=-c -g -I/usr/include/PCSC -I../include -Wall -Werror
 LINK=clang
-LDFLAGS=-g ../opt/tester/lib/libopenbadger.a -ljansson -lpcsclite 
+LDFLAGS=-g -L ../opt/openbadger/lib -lopenbadger -ljansson -lpcsclite 
 
 all:	${PROGS}
 

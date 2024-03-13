@@ -1,0 +1,19 @@
+pkoc-osdp - general purpose osdp pkoc plug-in for use with
+libosdp-conformance
+
+command line tool on pd side
+  send error
+  send card present
+
+mfgrep processor on acu side
+  card present
+  auth response
+
+command line on acu side
+  send mfg auth request
+
+...
+
+ALSO
+obtest-pkoc - talks to card directly
+

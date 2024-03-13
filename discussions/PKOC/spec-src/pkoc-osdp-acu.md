@@ -4,7 +4,7 @@ include-before:
 header-includes: |
   \usepackage{fancyhdr}
   \pagestyle{fancy}
-  \fancyfoot[CO,CE]{OSDP ACU PKOC Card Processing 1.50}
+  \fancyfoot[CO,CE]{OSDP ACU PKOC Card Processing 1.60}
   \fancyfoot[LE,RO]{\thepage}
 include-before:
 - '`\newpage{}`{=latex}'
@@ -13,7 +13,7 @@ include-before:
 
 ---
 
-Version 1.50
+Version 1.60
 
 \newpage{}
 
@@ -66,7 +66,8 @@ otherwise specified, when two or more TLV items are listed they are meant to be
 "stacked" one after the other.  They are not wrapped with an outer TLV.  These are meant to 
 be in sync with the PKOC base specification's notation.
 
-Several new tags are introduced, see table 1.  Error response codes are listed i table 2.
+Several new tags are introduced, see table 1.  Error response codes are
+listed in table 2.
 
 : Additional TLV Tags
 
@@ -116,8 +117,7 @@ Note one code, 0x01, has two bytes of detail.  Other defined error codes have no
 Message Flow
 ============
 
-Reader-Generated Challenge
---------------------------
+## Reader-Generated Challenge ##
 
 In this case the reader creates the PKOC Authentication Request,
 the ACU is responsible only for the cryptographic processing for
@@ -130,13 +130,16 @@ includes osdp_ACURXSIZE of at least 1024 bytes and osdp_KEEPACTIVE.
 traffic.
 - cardholder presents card
 - PD sends OSDP_CARD_PRESENT to the ACU, including the select response payload.
-- ACU sends OSDP_AUTH_REQUEST.  Some fields may be omitted due to pre-processing
+- ACU sends OSDP_AUTH_REQUEST.
+Some fields may be omitted due to pre-processing
 or PD-side values being provided.
 - PD sends Authentication Request to card
 - card provides Authentication Response [pkoc]
 - PD sends osdp_MFGREP("OSDP_AUTH_RESPONSE") in response to osdp_POLL
-- ACU processes the Authentication Response, including necessary EC crypto operations.
-- ACU extracts cardholder number from osdp_AUTH_RESPONSE and proceeds with access control
+- ACU processes the Authentication Response, including necessary
+EC crypto operations.
+- ACU extracts cardholder number from osdp_AUTH_RESPONSE and
+proceeds with access control
 processing.
 
 \newpage{}
@@ -172,8 +175,7 @@ processing.
 Message Flow
 ------------
 
-```text
-
+```
 EAC ACU     PD    CARD
 --- ---    ---    ----
  |   |      |      |
@@ -372,7 +374,7 @@ it does use an outer TLV to make PD-side processing easier.
 ### Example ###
 
 ```
-  0A0017E0FC065C0201004C00
+  1A9021E0FC065C0201004C00
 ```
 
 meaning OUI 0A0017, OSDP_PKOC_CARD_PRESENT (0xE0), payload FC with length 6, Supported Protocol 0100, Transaction sequence empty (meaning not provided by PD)
@@ -474,7 +476,7 @@ Document source is in github.
 
 PKOC as used here refers to the card format specificed by PSIA.
 
-This is version 1.50 of this document.
+This is version 1.60 of this document.
 
 This document originated by Rodney Thayer (Smithee Solutions),
 Mike Zercher (Secure Element Solutions),
@@ -507,9 +509,10 @@ Assigned Numbers
 
 This specification assumes certain numbers will be registered.
 
-OUI value (3-byte) - to be registerered with IEEE by (PSIA?.)
+The OUI value (3-byte) is registered with the IEE and assigned to PSIA - the
+value is 1A-90-21.
 
-Tags FD, FE to be registered in the tag space for PKOC.
+Tags FD, FE should be registered in the tag space for PKOC.
 
 \newpage{}
 
@@ -593,5 +596,6 @@ References
        identifier tag; removed osdp_RAW message ; remove PD-side
        transaction ID generation; added glossary; clarify reader ID TLV
        use; add transaction sequence to auth response
+1.60   fix OUI reference in the appendix and the example(s).
 ```
 

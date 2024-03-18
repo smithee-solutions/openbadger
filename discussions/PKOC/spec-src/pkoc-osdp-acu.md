@@ -4,7 +4,7 @@ include-before:
 header-includes: |
   \usepackage{fancyhdr}
   \pagestyle{fancy}
-  \fancyfoot[CO,CE]{OSDP ACU PKOC Card Processing 1.61}
+  \fancyfoot[CO,CE]{OSDP ACU PKOC Card Processing 1.62}
   \fancyfoot[LE,RO]{\thepage}
 include-before:
 - '`\newpage{}`{=latex}'
@@ -13,7 +13,7 @@ include-before:
 
 ---
 
-Version 1.61
+Version 1.62
 
 \newpage{}
 
@@ -23,7 +23,7 @@ Introduction
 This document describes alternatives to process PKOC cards for access control.
 It is assumed that these would be considered as an alternative to a reader
 that handles the complete PKOC operation and just returns a cardholder number 
-to the ACU.
+to the ACU as an "integrated PKOC reader".
 This document describes processing PKOC cards with the work on the ACU
 "on-loaded" (from the ACU's point of view), not off-loaded to the PD. 
 
@@ -42,9 +42,10 @@ PKOC credential processing is either "synchronous", meaning the ACU generates th
 at the time the card is presented, or "pre-loaded", meaning the ACU generates these parameters in advance
 thus reducing the number of message exchanges needed during card read operations.
 
-This spec is mean to track the main PKOC spec.  It is assumed the then-current protocol version from
-that document is to be assumed.  Protocol version details may be shared between the ACU and PD to
-manage this.
+This spec is mean to be used in conjunction with the main PKOC card spec [pkoc].  It 
+is assumed the then-current protocol version from
+that document applies.  For guidance on formats, credential length, version and other
+protocol details refer to [pkoc].
 
 This work is licensed under a Creative Commons Attribution-ShareAlike 4.0 International License.  See
 http://creativecommons.org/licenses/by-sa/4.0/ for license details.
@@ -100,8 +101,9 @@ There are several possible scenarios:
 1. The ACU is unaware or is configured to not directly handle PKOC credential processing.  It just accepts (card lengths of 64 or greater.)
 2. The ACU is configured to use PKOC OSDP ACU processing and will activate this capability.
 To identify this:
-   - for preloading the transaction identifier the ACU will send OSDP_NEXT_TRANSACTION with a transaction identifier.
-   - for synchronous operation the ACU will send OSDP_NEXT_TRANSACTION with an empty payload.
+   - for preloading the transaction identifier the ACU will send NEXT TRANSACTION with a transaction identifier.
+   - for synchronous operation the ACU will send
+NEXT TRANSACTION with an empty payload.
 3. The ACU is configured to use PKOC OSDP ACU processing if the PD indicates it is configured to do so.  The PD in this case must send an
 OSDP_PKOC_TRANSACTION_REFRESH to indicate to the ACU it has this capability.
    - If the PD is capable of handling transaction identifer pre-loading it specifies a "pre-load OK" status in the TRANSACTION_REFRESH payload
@@ -114,14 +116,13 @@ OSDP_PKOC_TRANSACTION_REFRESH to indicate to the ACU it has this capability.
 
 In this case all PKOC processing happens within the PD.  The ACU ___should___ send
 an OSDP_PKOC_NEXT_TRANSACTION command to confirm the PD is not expecting some other mode
-of operation.
+of operation.  The ACU should be using osdp_ACURXSIZE and osdp_KEEPACTIVE in any case
+since there is expected to be smartcard bidirectional processing.
 
-- the ACU ___must___ declares it's max receive message size using osdp_ACURXSIZE
-if it the expected PKOC cardholder number
-will not fit in a default size OSDP PDU (128 bytes which includes secure channel overhead.)
+- the ACU should declares it's max receive message size using osdp_ACURXSIZE
 - the ACU ___should___ use osdp_KEEPACTIVE to direct the PD to keep the 13.56 radio active during
 card processing.
-- the ACU sends an OSDP_PKOC_NEXT_TRANSACTION command.
+- the ACU ___should___ send an OSDP_PKOC_NEXT_TRANSACTION command.
 - the PD responds with a NAK to indicate the command cannot be
 processed.
 - a card is presented
@@ -176,13 +177,11 @@ EAC initiates OSDP communications
 ### ACU-initiated pre-load ###
 
 In this case the ACU initiate the use of PKOC OSDP ACU processing.
-The ACU ___should___ send
+The ACU ___must___ send
 an OSDP_PKOC_NEXT_TRANSACTION command to confirm the PD is not expecting some other mode
 of operation.
 
-- the ACU ___must___ declares it's max receive message size using osdp_ACURXSIZE
-if it the expected PKOC cardholder number
-will not fit in a default size OSDP PDU (128 bytes which includes secure channel overhead.)
+- the ACU should declares it's max receive message size using osdp_ACURXSIZE
 - the ACU ___should___ use osdp_KEEPACTIVE to direct the PD to keep the 13.56 radio active during
 card processing.
 - the ACU sends an OSDP_PKOC_NEXT_TRANSACTION command. 
@@ -247,9 +246,7 @@ EAC initiates OSDP communications
 
 In this case the ACU initiates the use of PKOC OSDP ACU processing. 
 
-- the ACU ___must___ declares it's max receive message size using osdp_ACURXSIZE
-if it the expected PKOC cardholder number
-will not fit in a default size OSDP PDU (128 bytes which includes secure channel overhead.)
+- the ACU should declares it's max receive message size using osdp_ACURXSIZE
 - the ACU ___should___ use osdp_KEEPACTIVE to direct the PD to keep the 13.56 radio active during
 card processing.
 - the ACU sends an OSDP_PKOC_NEXT_TRANSACTION command. this contains an empty payload to indicate
@@ -315,12 +312,8 @@ In this case the PD requests a transaction refresh thereby indicating to
 the ACU that it uses  
 PKOC OSDP ACU processing.
 
-- the ACU ___must___ declares it's max receive message size using osdp_ACURXSIZE
-if it the expected PKOC cardholder number
-will not fit in a default size OSDP PDU (128 bytes which includes secure channel overhead.)
-- the ACU ___should___ use osdp_KEEPACTIVE to direct the PD to keep the 13.56 radio active during
-card processing.
 - the PD sends an OSDP_PKOC_TRANSACTION_REFRESH response indicating a request for a transaction ID.
+- to prepare to perform PKOC processing the ACU sends ACURXSIZE and KEEPACTIVE.
 - the ACU sends an OSDP_PKOC_NEXT_TRANSACTION command with a transaction id.
 - a card is presented
 - an Auth Request is immediately sent to to the card.  The PD does not need to wait for
@@ -339,14 +332,14 @@ EAC ACU     PD    CARD
  |   |      |      |
 EAC initiates OSDP communications
  |   |      |      |
+      <-----
+      Xtn Refresh
       ----->
       osdp_ACURXSIZE
       ----->
       osdp_KEEPACTIVE
       ----->
  |   |      |      |
-      <-----
-      Xtn Refresh
       ----->
     Next Txn with transaction id
  |   |      |      |
@@ -383,12 +376,8 @@ PKOC OSDP ACU processing.
 The transaction refresh response contains an empty payload indicating synchronous
 operation is to be used.
 
-- the ACU ___must___ declares it's max receive message size using osdp_ACURXSIZE
-if it the expected PKOC cardholder number
-will not fit in a default size OSDP PDU (128 bytes which includes secure channel overhead.)
-- the ACU ___should___ use osdp_KEEPACTIVE to direct the PD to keep the 13.56 radio active during
-card processing.
 - the PD sends an OSDP_PKOC_TRANSACTION_REFRESH response with an empty payload
+- to prepare to perform PKOC processing the ACU sends ACURXSIZE and KEEPACTIVE.
 - the ACU sends an OSDP_PKOC_NEXT_TRANSACTION command with an empty payload
 - a card is presented
 - a CARD PRESENT messge is sent to the ACU
@@ -397,7 +386,9 @@ card processing.
 - some time later, the card responds with a response
 - the card response is sent from the PD to the ACU
 - the ACU processes the card number.
+
 \newpage{}
+
 #### Message Exchanges - PD-initiated synchronous ####
 
 ```
@@ -406,13 +397,13 @@ EAC ACU     PD    CARD
  |   |      |      |
 EAC initiates OSDP communications
  |   |      |      |
+      <-----
+      Xtn Refresh
       ----->
       osdp_ACURXSIZE
       ----->
       osdp_KEEPACTIVE
       ----->
-      <-----
-      Xtn Refresh
       ----->
     Next Txn with empty payload
  |   |      |      |
@@ -460,9 +451,11 @@ A sequence number may also be provided with the transaction ID.  This is useful 
 is periodically sending transaction identifiers and there is a need to know which one the PD is using.
 It is assumed the PD uses the last transaction identifier sent. If the PD provides a transaction identifier
 sequence number in the OSDP_PKOC_AUTH_RESPONSE the ACU must use the corresponding transaction identifier in the
-validatation process.
-
-Note that unless the PD supports integrated PKOC credential processing
+validatation process.  If the ACU is pre-loading transaction identifiers and a card has not been processed 
+by the PD within a suitable
+time interval then the ACU must send a new transaction identifier (in an OSDP_PKOC_NEXT_TRANSACTION command) so as to ensure
+freshness of the entropy used.  Transaction identifiers are to be used for only one credential operation.  Refer to [pkoc] for
+guidance on  the transaction id lifetime.  Note that unless the PD supports integrated PKOC credential processing
 the transaction ID is always generated by the ACU.
 
 ## Reader Identifier Set-up ##
@@ -493,6 +486,16 @@ of the OSDP standard in order to facilitate future migration into the OSDP mainl
 | OSDP_PKOC_TRANSACTION_REFRESH | 0xE4 |
 | OSDP_PKOC_READER_ERROR        | 0xFE |
 
+## Credential Processing Considerations ##
+
+The crypto operation on a PKOC card may take longer than the availabe
+time after an Authentication Request is sent.  Implementations must not 
+assume that an OSDP_PKOC_AUTH_REQUEST or other messages will elicit an immediate
+response.  It should be expected that in general commands will be
+responded to with a plain acknowledgement 
+(osdp_ACK) and one or more OSDP poll/ack cycles (200 ms max per the OSDP spec) may occur before
+there is a response from the card.
+
 \newpage{}
 
 OSDP_PKOC_AUTH_REQUEST
@@ -513,14 +516,28 @@ previously allocated, it's corresponding sequence number may also be sent.
 |        |                                                      |
 |     3  | 0xE1 (Mfg Request Code)                              |
 |        |                                                      |
-|     4  | Auth Command Parameter 1 ("P1") - 1 octet (only in first fragment) |
+|     4  | Total request payload size (Least Significant Octet) |
 |        |                                                      |
-|     5  | Auth Command Parameter 2 ("P2") - 1 octet (only in first fragment) |
+|     5  | Total request payload size (Most Significant Octet)  |
 |        |                                                      |
-|   6-n  | Protocol Version TLV                                 |
+|     6  | Offset in request (Least Significant Octet)          |
+|        |                                                      |
+|     7  | Offset in request (Most Significant Octet)           |
+|        |                                                      |
+|     8  | Command fragment length (Least Significant Octet)    |
+|        |                                                      |
+|     9  | Command fragment length (Most Significant Octet)     |
+|        |                                                      |
+|    10  | Auth Command Parameter 1 ("P1") - 1 octet (only in first fragment) |
+|        |                                                      |
+|    11  | Auth Command Parameter 2 ("P2") - 1 octet (only in first fragment) |
+|        |                                                      |
+|   12-n | Protocol Version TLV                                 |
 |        | Transaction ID TLV (see description for use.)        |
 |     | Reader Identifer TLV (or indicated to be omitted)    |
 |     | Transaction ID Sequence TLV (optional)               |
+ 
+
  
 \newpage{}
 
@@ -540,11 +557,25 @@ be sent in fragments by the PD.
 |     0  | Manufacturer OUI (3 octets)                           |
 |        |                                                       |
 |     3  | 0xE2 (Mfg Response Code)                              |
-|        |                                                       |
-|   4-n  | PKOC Authentication Response TLV (contais Public Key and Digital Signature TLV) |
+|        |                                                      |
+|     4  | Total request payload size (Least Significant Octet) |
+|        |                                                      |
+|     5  | Total request payload size (Most Significant Octet)  |
+|        |                                                      |
+|     6  | Offset in request (Least Significant Octet)          |
+|        |                                                      |
+|     7  | Offset in request (Most Significant Octet)           |
+|        |                                                      |
+|     8  | Command fragment length (Least Significant Octet)    |
+|        |                                                      |
+|     9  | Command fragment length (Most Significant Octet)     |
+|        |                                                      |
+|   10-n | PKOC Authentication Response TLV (contais Public Key and Digital Signature TLV) |
 |        | Transaction ID TLV (optional)                         |
 |        | Transaction ID Sequence TLV (optional)                |
 |        | Error TLV (optional, do not send if no error.)        |
+ 
+
 
 \newpage{}
 
@@ -565,14 +596,28 @@ it does use an outer TLV to make PD-side processing easier.
 
 | Offset | Contents                                             |
 |------- | ---------------------------------------------------- |
-|      0 | Manufacturer OUI (3 octets)                          |
+|     0  | Manufacturer OUI (3 octets)                          |
 |        |                                                      |
-|      3 | 0xE0 (Mfg Response Code)                             |
+|     3  | 0xE0 (Mfg Response Code)                             |
 |        |                                                      |
-|    4-n | Card Present TLV, contains:                          |
+|     4  | Total request payload size (Least Significant Octet) |
+|        |                                                      |
+|     5  | Total request payload size (Most Significant Octet)  |
+|        |                                                      |
+|     6  | Offset in request (Least Significant Octet)          |
+|        |                                                      |
+|     7  | Offset in request (Most Significant Octet)           |
+|        |                                                      |
+|     8  | Command fragment length (Least Significant Octet)    |
+|        |                                                      |
+|     9  | Command fragment length (Most Significant Octet)     |
+|        |                                                      |
+|   10-n | Card Present TLV, contains:                          |
 |        |   Supported Protocol Versions TLV                    |
 |        |   Transaction Sequence TLV (optional)                |
 |        |   Error TLV (optional)                               |
+ 
+
 
 ## Example ##
 
@@ -601,9 +646,12 @@ This "pre-loads" the PD with a transaction ID for more efficient operation.  It
 is assumed the PD will track the sequence numbers in case more than one
 NEXT_TRANSACTION command is received before the next card read.
 
-If the PD determines it cannot perform PKOC operations (at all, or for
-at least one of the specified protocol versions) it must respond with an
-OSDP NAK.
+Under certain conditions the PD must return an OSDP negative acknowledgement (osdp_NAK).
+
+The PD must return a NAK when:
+- it does no PKOC processing
+- it only does synchronous operation and a transaction ID was specified.
+- it does not work with any of the protocol versions listed in the command.
 
 : OSDP_PKOC_NEXT_TRANSACTION Payload
 
@@ -613,7 +661,19 @@ OSDP NAK.
 |        |                                                      |
 |     3  | 0xE3 (Mfg Command Code)                              |
 |        |                                                      |
-|   4-n  | Transaction ID TLV                                   |
+|     4  | Total request payload size (Least Significant Octet) |
+|        |                                                      |
+|     5  | Total request payload size (Most Significant Octet)  |
+|        |                                                      |
+|     6  | Offset in request (Least Significant Octet)          |
+|        |                                                      |
+|     7  | Offset in request (Most Significant Octet)           |
+|        |                                                      |
+|     8  | Command fragment length (Least Significant Octet)    |
+|        |                                                      |
+|     9  | Command fragment length (Most Significant Octet)     |
+|        |                                                      |
+|   10-n | Transaction ID TLV                                   |
 |        | Transaction ID Sequence TLV (optional)               |
 |        | Protocol Version TLV (optional)                      |
 
@@ -632,11 +692,24 @@ Note this has no multipart header as the response will never exceed the minimum 
 
 | Offset | Contents                                             |
 |------- | ---------------------------------------------------- |
-|      0 | Manufacturer OUI (3 octets)                          |
+|     0  | Manufacturer OUI (3 octets)                          |
 |        |                                                      |
-|      3 | 0xFE (Mfg Response Code)                             |
+|     3  | 0xFE (Mfg Response Code)                             |
 |        |                                                      |
-|    4-n | Error bytes (see table 2, note no TLV)               |
+|     4  | Total request payload size (Least Significant Octet) |
+|        |                                                      |
+|     5  | Total request payload size (Most Significant Octet)  |
+|        |                                                      |
+|     6  | Offset in request (Least Significant Octet)          |
+|        |                                                      |
+|     7  | Offset in request (Most Significant Octet)           |
+|        |                                                      |
+|     8  | Command fragment length (Least Significant Octet)    |
+|        |                                                      |
+|     9  | Command fragment length (Most Significant Octet)     |
+|        |                                                      |
+|   10-n | Error bytes (see table 2, note no TLV)               |
+
 
 \newpage{}
 
@@ -662,11 +735,23 @@ are acceptable for use.
 
 | Offset | Contents                                             |
 |------- | ---------------------------------------------------- |
-|      0 | Manufacturer OUI (3 octets)                          |
+|     0  | Manufacturer OUI (3 octets)                          |
 |        |                                                      |
-|      3 | 0xE4 (Mfg Response Code)                             |
+|     3  | 0xE4 (Mfg Response Code)                             |
 |        |                                                      |
-|    4-n | OSDP PKOC ACU capability TLV                         |
+|     4  | Total request payload size (Least Significant Octet) |
+|        |                                                      |
+|     5  | Total request payload size (Most Significant Octet)  |
+|        |                                                      |
+|     6  | Offset in request (Least Significant Octet)          |
+|        |                                                      |
+|     7  | Offset in request (Most Significant Octet)           |
+|        |                                                      |
+|     8  | Command fragment length (Least Significant Octet)    |
+|        |                                                      |
+|     9  | Command fragment length (Most Significant Octet)     |
+|        |                                                      |
+|  10-n  | OSDP PKOC ACU capability TLV                         |
 |        | Protocol Version (TLV as described in PKOC spec)     |
 |        |  -or- empty (0x00 0x00)  |
 
@@ -684,14 +769,14 @@ http://creativecommons.org/licenses/by-sa/4.0/ for license details.
 This document was written in 'markdown', using pandoc.  PDF converter assistance provided by latex.  Linux command line to create the PDF is
 
 ```
-  pandoc --toc --toc-level=4 -o pkoc-osdp-acu.pdf pkoc-osdp-acu.md
+  pandoc --toc --toc-depth=4 -o pkoc-osdp-acu.pdf pkoc-osdp-acu.md
 ```
 
 Document source is in github.
 
 PKOC as used here refers to the card format specificed by PSIA.
 
-This is version 1.61 of this document.
+This is version 1.62 of this document.
 
 This document originated by Rodney Thayer (Smithee Solutions),
 Mike Zercher (Secure Element Solutions),
@@ -733,6 +818,9 @@ private key.
 Command - message from an OSDP ACU to an OSDP PD.
 
 EC - Elliptic Curve.
+
+NAK - Negative Acknowledgement.  A response from an OSDP PD back to the ACU indicating there was an
+issue with the command just receive.  May optionally have an explanation (byte) attached.
 
 NFC - Near-Field Communications.
 
@@ -812,5 +900,6 @@ References
        added more flow diagrams
        pulled the multipart header options (not used here)
        added version tags and logic
+1.62 - incorporate changes from 20240314 meeting
 ```
 

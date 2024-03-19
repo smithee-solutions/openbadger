@@ -865,7 +865,7 @@ to be used in signature validation.
 References
 ----------
 
-[pkoc] PKOC NFC Card Specification, Version 1.0 Rev0, 6/13/2023.  Physical Security Interoperability Alliance.
+[pkoc] PKOC NFC Card Specification, Version 1.1 Rev0, 12/1/2023.  Physical Security Interoperability Alliance.
 
 [2] Integrated Engineering OSDP extensions, document 100-01G-PS-01-INID "Vendor Specific OSDP Extensions v10c".
 

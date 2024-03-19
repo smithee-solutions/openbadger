@@ -4,7 +4,7 @@ include-before:
 header-includes: |
   \usepackage{fancyhdr}
   \pagestyle{fancy}
-  \fancyfoot[CO,CE]{OSDP ACU PKOC Card Processing 1.62}
+  \fancyfoot[CO,CE]{OSDP ACU PKOC Card Processing 1.63}
   \fancyfoot[LE,RO]{\thepage}
 include-before:
 - '`\newpage{}`{=latex}'
@@ -13,7 +13,7 @@ include-before:
 
 ---
 
-Version 1.62
+Version 1.63
 
 
 \newpage{}
@@ -777,7 +777,7 @@ Document source is in github.
 
 PKOC as used here refers to the card format specificed by PSIA.
 
-This is version 1.62 of this document.
+This is version 1.63 of this document.
 
 This document originated by Rodney Thayer (Smithee Solutions),
 Mike Zercher (Secure Element Solutions),
@@ -902,5 +902,6 @@ References
        pulled the multipart header options (not used here)
        added version tags and logic
 1.62 - incorporate changes from 20240314 meeting
+1.63 - put offsets in all messages (reverses offset removal in 1.62)
 ```
 

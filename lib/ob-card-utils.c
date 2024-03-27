@@ -1,7 +1,7 @@
 /*
   openbadger - utility functions
 
-  (C)Copyright 2023 Smithee Solutions LLC
+  (C)Copyright 2023-2024 Smithee Solutions LLC
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@
 #include <string.h>
 
 
+#include <jansson.h>
 #include <PCSC/wintypes.h>
 #include <PCSC/pcsclite.h>
 #include <PCSC/winscard.h>

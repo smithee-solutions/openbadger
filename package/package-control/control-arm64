@@ -1,5 +1,5 @@
 Package: openbadger
-Version: 1.62
+Version: 1.70
 Section: custom
 Priority: optional
 Architecture: arm64

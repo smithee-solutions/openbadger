@@ -31,6 +31,7 @@
 #include <stdlib.h>
 
 
+#include <jansson.h>
 #include <PCSC/wintypes.h>
 #include <PCSC/pcsclite.h>
 #include <PCSC/winscard.h>
@@ -67,6 +68,8 @@ int obtest_init_settings
   ctx->der_out = fopen(OBTEST_GETCERT_RESULTS, "w");
   if (NULL EQUALS ctx->der_out)
     status = STOB_INIT_FILES;
+  if (status EQUALS ST_OK)
+    status = ob_read_settings(ctx);
 
   return(status);
 

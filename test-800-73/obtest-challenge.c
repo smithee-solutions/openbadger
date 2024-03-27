@@ -30,6 +30,7 @@
 #include <stdlib.h>
 
 
+#include <jansson.h>
 #include <PCSC/wintypes.h>
 #include <PCSC/pcsclite.h>
 #include <PCSC/winscard.h>

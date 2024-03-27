@@ -22,6 +22,9 @@
 #include <string.h>
 
 
+#include <jansson.h>
+
+
 #include <ob-crypto.h>
 #include <openbadger-common.h>
 #include <ob-pacs.h>

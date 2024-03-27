@@ -23,6 +23,9 @@
 #define OB_UID_SIZE        (56/8)
 #define OB_7816_BUFFER_MAX (1000)  // our buffer not one in the spec
 
+#define OPENBADGER_PATH_SETTINGS "openbadger-settings.json"
+#define OPENBADGER_PATH_COMMON "/opt/openbadger/"
+
 // various formats
 
 #define OB_FORMAT_SIA26BIT (0)
@@ -90,6 +93,8 @@ typedef struct ob_context
   int pacs_data_format;
   FILE *der_out;
   char *payload_file;
+  json_t *settings;
+  char settings_file_path [OB_STRING_MAX];
 
   // for PCSC reader control
   int reader_index;
@@ -136,6 +141,7 @@ int ob_init_smartcard(OB_CONTEXT *ctx);
 char *ob_buffer_dump_string(OB_CONTEXT *ctx, unsigned char *buffer, int buffer_size, char *tag);
 void ob_dump_buffer(OB_CONTEXT *ctx, unsigned char *bytes, int length, int dest);
 int ob_read_settings(OB_CONTEXT *ctx);
+int openbadger_load_settings(OB_CONTEXT *ctx);
 unsigned char *string_buffer_hex(OB_CONTEXT *ctx, const char *buf, int *buf_lth);
 char *string_hex_buffer(OB_CONTEXT *ctx, unsigned char *buf, int buf_lth);
 

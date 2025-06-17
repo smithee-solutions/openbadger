@@ -1,0 +1,6 @@
+#!/bin/bash
+set -x
+make package CRYPTO_LIB=open3 \
+  CRYPTO_INCLUDE="-I/opt/crypto/open" \
+  CRYPTO_LIB_EXTERNAL="-L/opt/crypto/lib -lopen3"
+

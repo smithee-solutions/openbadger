@@ -1,0 +1,6 @@
+#!/bin/bash
+
+mkdir -p /opt/tester/log
+
+echo >>/opt/tester/log/install.log openbadger installed.
+

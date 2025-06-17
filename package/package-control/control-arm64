@@ -1,0 +1,10 @@
+Package: openbadger
+Version: 3.00
+Section: custom
+Priority: optional
+Architecture: arm64
+Essential: no
+Installed-Size: 1024
+Maintainer: github@smithee.solutions
+Description: Credential manipulation tools
+
